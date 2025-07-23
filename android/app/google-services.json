@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1044356634454",
+    "project_id": "electrical-substation-manager",
+    "storage_bucket": "electrical-substation-manager.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044356634454:android:5dda29b54bba44e36f68f7",
+        "android_client_info": {
+          "package_name": "com.example.electrical_substation_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgksADSlHOoy5gJrLtBH2sMhAwA_4qrpM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
