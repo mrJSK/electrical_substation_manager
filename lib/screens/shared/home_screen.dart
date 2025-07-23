@@ -10,7 +10,7 @@ import '../dashboards/zone_dashboard.dart';
 import '../dashboards/circle_dashboard.dart';
 import '../dashboards/division_dashboard.dart';
 import '../dashboards/subdivision_dashboard.dart';
-import '../dashboards/substation_dashboard.dart';
+import '../dashboards/substation/substation_dashboard.dart';
 
 class HomeScreen extends ConsumerWidget {
   final AppUser user;
