@@ -1,16 +1,35 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import '../screens/admin_dashboard.dart';
+import '../screens/api_documentation_screen.dart';
+import '../screens/api_keys_screen.dart';
+import '../screens/api_logs_screen.dart';
+import '../screens/api_management_screen.dart';
+import '../screens/audit_trail_screen.dart';
+import '../screens/hierarchy_management_screen.dart';
+import '../screens/not_found_screen.dart';
 import '../screens/organizations_screen.dart';
-// import '../screens/users_screen.dart';
-// import '../screens/approvals_screen.dart';
-// import '../screens/substations_screen.dart';
-// import '../screens/analytics_screen.dart';
-// import '../screens/roles_screen.dart';
-// import '../screens/settings_screen.dart';
-// import '../screens/login_screen.dart';
-// import '../screens/organization_details_screen.dart';
-// import '../screens/user_details_screen.dart';
+import '../screens/performance_monitoring_screen.dart';
+import '../screens/permissions_screen.dart';
+import '../screens/reports_screen.dart';
+import '../screens/role_details_screen.dart';
+import '../screens/server_error_screen.dart';
+import '../screens/substation_details_screen.dart';
+import '../screens/substation_monitoring_screen.dart';
+import '../screens/system_alerts_screen.dart';
+import '../screens/system_health_screen.dart';
+import '../screens/system_logs_screen.dart';
+import '../screens/system_monitoring_screen.dart';
+import '../screens/user_activity_report_screen.dart';
+import '../screens/users_screen.dart';
+import '../screens/approvals_screen.dart';
+import '../screens/substations_screen.dart';
+import '../screens/analytics_screen.dart';
+import '../screens/roles_screen.dart';
+import '../screens/settings_screen.dart';
+import '../screens/login_screen.dart';
+import '../screens/organization_details_screen.dart';
+import '../screens/user_details_screen.dart';
 import '../../auth/auth_provider.dart';
 
 final webRouter = GoRouter(
@@ -380,9 +399,6 @@ final webRouter = GoRouter(
   errorBuilder: (context, state) => NotFoundScreen(
     error: state.error?.toString(),
   ),
-
-  // URL path strategy for web
-  urlPathStrategy: UrlPathStrategy.path,
 );
 
 // Navigation Helper Extension
