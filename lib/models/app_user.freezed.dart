@@ -36,16 +36,23 @@ mixin _$AppUser {
   bool get isActive => throw _privateConstructorUsedError;
   String get status =>
       throw _privateConstructorUsedError; // pending, approved, rejected, suspended
-// Timestamps for audit trail
+// Timestamps for audit trail - Using TimestampConverter for Firestore compatibility
+  @TimestampConverter()
   DateTime? get createdAt => throw _privateConstructorUsedError;
+  @TimestampConverter()
   DateTime? get lastLogin => throw _privateConstructorUsedError;
+  @TimestampConverter()
   DateTime? get lastSynced => throw _privateConstructorUsedError;
+  @TimestampConverter()
   DateTime? get requestedAt =>
       throw _privateConstructorUsedError; // When user registration was requested
+  @TimestampConverter()
   DateTime? get approvedAt =>
       throw _privateConstructorUsedError; // When user was approved
+  @TimestampConverter()
   DateTime? get rejectedAt =>
       throw _privateConstructorUsedError; // When user was rejected
+  @TimestampConverter()
   DateTime? get suspendedAt =>
       throw _privateConstructorUsedError; // When user was suspended
 // Approval workflow fields
@@ -65,7 +72,9 @@ mixin _$AppUser {
   Map<String, dynamic> get organizationSettings =>
       throw _privateConstructorUsedError; // Org-specific user settings
 // Security and compliance
+  @TimestampConverter()
   DateTime? get passwordLastChanged => throw _privateConstructorUsedError;
+  @TimestampConverter()
   DateTime? get termsAcceptedAt => throw _privateConstructorUsedError;
   String? get preferredLanguage => throw _privateConstructorUsedError;
   List<String> get deviceTokens =>
@@ -101,13 +110,13 @@ abstract class $AppUserCopyWith<$Res> {
       Map<String, dynamic> roleData,
       bool isActive,
       String status,
-      DateTime? createdAt,
-      DateTime? lastLogin,
-      DateTime? lastSynced,
-      DateTime? requestedAt,
-      DateTime? approvedAt,
-      DateTime? rejectedAt,
-      DateTime? suspendedAt,
+      @TimestampConverter() DateTime? createdAt,
+      @TimestampConverter() DateTime? lastLogin,
+      @TimestampConverter() DateTime? lastSynced,
+      @TimestampConverter() DateTime? requestedAt,
+      @TimestampConverter() DateTime? approvedAt,
+      @TimestampConverter() DateTime? rejectedAt,
+      @TimestampConverter() DateTime? suspendedAt,
       String? approvedBy,
       String? rejectedBy,
       String? suspendedBy,
@@ -115,8 +124,8 @@ abstract class $AppUserCopyWith<$Res> {
       String? suspensionReason,
       String? tenantId,
       Map<String, dynamic> organizationSettings,
-      DateTime? passwordLastChanged,
-      DateTime? termsAcceptedAt,
+      @TimestampConverter() DateTime? passwordLastChanged,
+      @TimestampConverter() DateTime? termsAcceptedAt,
       String? preferredLanguage,
       List<String> deviceTokens,
       bool isEmailVerified,
@@ -344,13 +353,13 @@ abstract class _$$AppUserImplCopyWith<$Res> implements $AppUserCopyWith<$Res> {
       Map<String, dynamic> roleData,
       bool isActive,
       String status,
-      DateTime? createdAt,
-      DateTime? lastLogin,
-      DateTime? lastSynced,
-      DateTime? requestedAt,
-      DateTime? approvedAt,
-      DateTime? rejectedAt,
-      DateTime? suspendedAt,
+      @TimestampConverter() DateTime? createdAt,
+      @TimestampConverter() DateTime? lastLogin,
+      @TimestampConverter() DateTime? lastSynced,
+      @TimestampConverter() DateTime? requestedAt,
+      @TimestampConverter() DateTime? approvedAt,
+      @TimestampConverter() DateTime? rejectedAt,
+      @TimestampConverter() DateTime? suspendedAt,
       String? approvedBy,
       String? rejectedBy,
       String? suspendedBy,
@@ -358,8 +367,8 @@ abstract class _$$AppUserImplCopyWith<$Res> implements $AppUserCopyWith<$Res> {
       String? suspensionReason,
       String? tenantId,
       Map<String, dynamic> organizationSettings,
-      DateTime? passwordLastChanged,
-      DateTime? termsAcceptedAt,
+      @TimestampConverter() DateTime? passwordLastChanged,
+      @TimestampConverter() DateTime? termsAcceptedAt,
       String? preferredLanguage,
       List<String> deviceTokens,
       bool isEmailVerified,
@@ -574,13 +583,13 @@ class _$AppUserImpl extends _AppUser {
       final Map<String, dynamic> roleData = const {},
       this.isActive = true,
       this.status = 'pending',
-      this.createdAt,
-      this.lastLogin,
-      this.lastSynced,
-      this.requestedAt,
-      this.approvedAt,
-      this.rejectedAt,
-      this.suspendedAt,
+      @TimestampConverter() this.createdAt,
+      @TimestampConverter() this.lastLogin,
+      @TimestampConverter() this.lastSynced,
+      @TimestampConverter() this.requestedAt,
+      @TimestampConverter() this.approvedAt,
+      @TimestampConverter() this.rejectedAt,
+      @TimestampConverter() this.suspendedAt,
       this.approvedBy,
       this.rejectedBy,
       this.suspendedBy,
@@ -588,8 +597,8 @@ class _$AppUserImpl extends _AppUser {
       this.suspensionReason,
       this.tenantId,
       final Map<String, dynamic> organizationSettings = const {},
-      this.passwordLastChanged,
-      this.termsAcceptedAt,
+      @TimestampConverter() this.passwordLastChanged,
+      @TimestampConverter() this.termsAcceptedAt,
       this.preferredLanguage,
       final List<String> deviceTokens = const [],
       this.isEmailVerified = false,
@@ -652,23 +661,30 @@ class _$AppUserImpl extends _AppUser {
   @JsonKey()
   final String status;
 // pending, approved, rejected, suspended
-// Timestamps for audit trail
+// Timestamps for audit trail - Using TimestampConverter for Firestore compatibility
   @override
+  @TimestampConverter()
   final DateTime? createdAt;
   @override
+  @TimestampConverter()
   final DateTime? lastLogin;
   @override
+  @TimestampConverter()
   final DateTime? lastSynced;
   @override
+  @TimestampConverter()
   final DateTime? requestedAt;
 // When user registration was requested
   @override
+  @TimestampConverter()
   final DateTime? approvedAt;
 // When user was approved
   @override
+  @TimestampConverter()
   final DateTime? rejectedAt;
 // When user was rejected
   @override
+  @TimestampConverter()
   final DateTime? suspendedAt;
 // When user was suspended
 // Approval workflow fields
@@ -705,8 +721,10 @@ class _$AppUserImpl extends _AppUser {
 // Org-specific user settings
 // Security and compliance
   @override
+  @TimestampConverter()
   final DateTime? passwordLastChanged;
   @override
+  @TimestampConverter()
   final DateTime? termsAcceptedAt;
   @override
   final String? preferredLanguage;
@@ -892,13 +910,13 @@ abstract class _AppUser extends AppUser {
       final Map<String, dynamic> roleData,
       final bool isActive,
       final String status,
-      final DateTime? createdAt,
-      final DateTime? lastLogin,
-      final DateTime? lastSynced,
-      final DateTime? requestedAt,
-      final DateTime? approvedAt,
-      final DateTime? rejectedAt,
-      final DateTime? suspendedAt,
+      @TimestampConverter() final DateTime? createdAt,
+      @TimestampConverter() final DateTime? lastLogin,
+      @TimestampConverter() final DateTime? lastSynced,
+      @TimestampConverter() final DateTime? requestedAt,
+      @TimestampConverter() final DateTime? approvedAt,
+      @TimestampConverter() final DateTime? rejectedAt,
+      @TimestampConverter() final DateTime? suspendedAt,
       final String? approvedBy,
       final String? rejectedBy,
       final String? suspendedBy,
@@ -906,8 +924,8 @@ abstract class _AppUser extends AppUser {
       final String? suspensionReason,
       final String? tenantId,
       final Map<String, dynamic> organizationSettings,
-      final DateTime? passwordLastChanged,
-      final DateTime? termsAcceptedAt,
+      @TimestampConverter() final DateTime? passwordLastChanged,
+      @TimestampConverter() final DateTime? termsAcceptedAt,
       final String? preferredLanguage,
       final List<String> deviceTokens,
       final bool isEmailVerified,
@@ -942,19 +960,26 @@ abstract class _AppUser extends AppUser {
   @override
   String get status;
   @override // pending, approved, rejected, suspended
-// Timestamps for audit trail
+// Timestamps for audit trail - Using TimestampConverter for Firestore compatibility
+  @TimestampConverter()
   DateTime? get createdAt;
   @override
+  @TimestampConverter()
   DateTime? get lastLogin;
   @override
+  @TimestampConverter()
   DateTime? get lastSynced;
   @override
+  @TimestampConverter()
   DateTime? get requestedAt;
   @override // When user registration was requested
+  @TimestampConverter()
   DateTime? get approvedAt;
   @override // When user was approved
+  @TimestampConverter()
   DateTime? get rejectedAt;
   @override // When user was rejected
+  @TimestampConverter()
   DateTime? get suspendedAt;
   @override // When user was suspended
 // Approval workflow fields
@@ -974,8 +999,10 @@ abstract class _AppUser extends AppUser {
   Map<String, dynamic> get organizationSettings;
   @override // Org-specific user settings
 // Security and compliance
+  @TimestampConverter()
   DateTime? get passwordLastChanged;
   @override
+  @TimestampConverter()
   DateTime? get termsAcceptedAt;
   @override
   String? get preferredLanguage;

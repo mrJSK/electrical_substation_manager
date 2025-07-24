@@ -8,7 +8,7 @@ import '../models/dynamic_role.dart';
 import '../repositories/user_repository.dart';
 
 part 'auth_provider.g.dart';
-part 'auth_provider.freezed.dart'; // Add this for Freezed
+part 'auth_provider.freezed.dart';
 
 // Auth Error Enum
 enum AuthError {
@@ -108,6 +108,19 @@ class AuthStateNotifier extends _$AuthStateNotifier {
           .getUserProfile(firebaseUser.uid);
 
       if (userProfile != null) {
+        // Check user approval status (from previous conversation about approval workflow)
+        if (userProfile.status == 'pending') {
+          state = const AuthState.error(AuthError.permissionDenied,
+              "Your account is pending approval. Please wait for authorization from your organization administrator.");
+          return;
+        }
+
+        if (userProfile.status == 'rejected') {
+          state = const AuthState.error(AuthError.permissionDenied,
+              "Your account registration was rejected. Please contact your organization administrator for assistance.");
+          return;
+        }
+
         if (!userProfile.isActive) {
           state = const AuthState.error(
               AuthError.permissionDenied, "Your account has been disabled.");
@@ -117,36 +130,47 @@ class AuthStateNotifier extends _$AuthStateNotifier {
         _cacheUser(userProfile);
         state = AuthState.authenticated(userProfile);
       } else {
-        // Create default user profile for new users
-        final newUser = AppUser(
-          uid: firebaseUser.uid,
-          email: firebaseUser.email ?? '',
-          name: firebaseUser.displayName ?? 'New User',
-          photoUrl: firebaseUser.photoURL,
-          role: const DynamicRole(
-            id: 'default_user',
-            name: 'basic_user',
-            displayName: 'Basic User',
-            hierarchyLevel: 99, // Lowest level
-            organizationId: 'default',
-            permissions: ['view_own', 'basic_operations'],
-            config: {'hierarchyAccess': 'own', 'dashboardType': 'basic'},
-          ),
-          organizationId: 'default',
-          permissions: const [],
-          roleData: const {},
-          lastLogin: DateTime.now(),
-          isActive: true,
-        );
+        // Create pending user instead of active user (from approval workflow conversation)
+        await _createPendingUser(firebaseUser);
 
-        await ref.read(userRepositoryProvider).createUserProfile(newUser);
-        _cacheUser(newUser);
-        state = AuthState.authenticated(newUser);
+        state = const AuthState.error(AuthError.permissionDenied,
+            "Registration successful! Your account has been submitted for approval. You will receive notification once approved.");
       }
     } catch (e) {
       state = AuthState.error(
           AuthError.unknown, "An error occurred: ${e.toString()}");
     }
+  }
+
+  /// Creates a new user with pending status requiring approval
+  Future<void> _createPendingUser(firebase.User firebaseUser) async {
+    // Create a default role for pending users
+    final defaultRole = DynamicRole(
+      id: 'pending_user',
+      name: 'pending_user',
+      displayName: 'Pending User',
+      hierarchyLevel: 999, // Lowest level
+      organizationId: 'default', // Will be updated during approval
+      permissions: const [], // No permissions until approved
+      config: const {'status': 'pending', 'dashboardType': 'none'},
+    );
+
+    // Use the factory constructor from previous conversation
+    final pendingUser = AppUser.createPendingUser(
+      uid: firebaseUser.uid,
+      email: firebaseUser.email ?? '',
+      name: firebaseUser.displayName ?? 'New User',
+      photoUrl: firebaseUser.photoURL,
+      role: defaultRole,
+      organizationId:
+          'default', // Will be updated based on organization selection
+      hierarchyId: null,
+    );
+
+    await ref.read(userRepositoryProvider).createUserProfile(pendingUser);
+
+    // Note: Don't cache pending users as they can't actually use the app
+    print('Pending user created: ${pendingUser.email}');
   }
 
   AppUser? _getCachedUser(String? uid) {
@@ -194,6 +218,26 @@ class AuthStateNotifier extends _$AuthStateNotifier {
     } catch (e) {
       state = AuthState.error(
           AuthError.unknown, "Google sign in failed: ${e.toString()}");
+    }
+  }
+
+  // Helper method to approve current user (for testing purposes)
+  Future<void> approveCurrentUser() async {
+    final currentFirebaseUser = firebase.FirebaseAuth.instance.currentUser;
+    if (currentFirebaseUser != null) {
+      try {
+        await ref.read(userRepositoryProvider).updateUserStatus(
+              currentFirebaseUser.uid,
+              'approved',
+              approvedBy: 'system', // Or actual approver UID
+            );
+
+        // Refresh the user profile
+        await refreshUserProfile();
+      } catch (e) {
+        state = AuthState.error(
+            AuthError.unknown, "Failed to approve user: ${e.toString()}");
+      }
     }
   }
 }
@@ -297,4 +341,38 @@ String? authError(AuthErrorRef ref) {
 @riverpod
 AuthState authState(AuthStateRef ref) {
   return ref.watch(authStateNotifierProvider);
+}
+
+// Additional providers for approval workflow from previous conversation
+
+// Helper provider to check if current user can approve others
+@riverpod
+bool canApproveUsers(CanApproveUsersRef ref) {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) return false;
+
+  return user.hasPermission('approve_users') ||
+      user.hasPermission('manage_users') ||
+      user.role.hierarchyLevel <= 30; // Top hierarchy roles can approve
+}
+
+// Helper provider to get user status
+@riverpod
+String userStatus(UserStatusRef ref) {
+  final user = ref.watch(currentUserProvider);
+  return user?.status ?? 'unknown';
+}
+
+// Helper provider to check if user account is pending
+@riverpod
+bool isUserPending(IsUserPendingRef ref) {
+  final user = ref.watch(currentUserProvider);
+  return user?.isPending ?? false;
+}
+
+// Helper provider to check if user can login
+@riverpod
+bool canUserLogin(CanUserLoginRef ref) {
+  final user = ref.watch(currentUserProvider);
+  return user?.canLogin ?? false;
 }

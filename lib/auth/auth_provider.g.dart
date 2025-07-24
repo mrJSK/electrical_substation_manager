@@ -576,6 +576,64 @@ final authStateProvider = AutoDisposeProvider<AuthState>.internal(
 );
 
 typedef AuthStateRef = AutoDisposeProviderRef<AuthState>;
+String _$canApproveUsersHash() => r'09f660f804f55c185a209517ef8b0e55424ac764';
+
+/// See also [canApproveUsers].
+@ProviderFor(canApproveUsers)
+final canApproveUsersProvider = AutoDisposeProvider<bool>.internal(
+  canApproveUsers,
+  name: r'canApproveUsersProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$canApproveUsersHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef CanApproveUsersRef = AutoDisposeProviderRef<bool>;
+String _$userStatusHash() => r'85b93bfaf978022b54ae45c604a7e44166e568ce';
+
+/// See also [userStatus].
+@ProviderFor(userStatus)
+final userStatusProvider = AutoDisposeProvider<String>.internal(
+  userStatus,
+  name: r'userStatusProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$userStatusHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef UserStatusRef = AutoDisposeProviderRef<String>;
+String _$isUserPendingHash() => r'e7581973689229e953d710b02a3090b4b9bdf51f';
+
+/// See also [isUserPending].
+@ProviderFor(isUserPending)
+final isUserPendingProvider = AutoDisposeProvider<bool>.internal(
+  isUserPending,
+  name: r'isUserPendingProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$isUserPendingHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef IsUserPendingRef = AutoDisposeProviderRef<bool>;
+String _$canUserLoginHash() => r'97ea970b325544d2db765054e833e20edaca6e75';
+
+/// See also [canUserLogin].
+@ProviderFor(canUserLogin)
+final canUserLoginProvider = AutoDisposeProvider<bool>.internal(
+  canUserLogin,
+  name: r'canUserLoginProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$canUserLoginHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef CanUserLoginRef = AutoDisposeProviderRef<bool>;
 String _$connectionStatusHash() => r'105134c8caa4471a94475f1d9da5b38b079fa274';
 
 /// See also [ConnectionStatus].
@@ -592,7 +650,7 @@ final connectionStatusProvider =
 );
 
 typedef _$ConnectionStatus = AutoDisposeNotifier<bool>;
-String _$authStateNotifierHash() => r'aaae912b139c695cfad4714b2f0432bec74aa36e';
+String _$authStateNotifierHash() => r'6bf70b5707ef37966d2493493756a0a237f999e4';
 
 /// See also [AuthStateNotifier].
 @ProviderFor(AuthStateNotifier)

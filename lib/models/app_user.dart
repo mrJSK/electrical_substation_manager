@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dynamic_role.dart';
 
 part 'app_user.freezed.dart';
@@ -26,14 +27,15 @@ class AppUser with _$AppUser {
     @Default(true) bool isActive,
     @Default('pending') String status, // pending, approved, rejected, suspended
 
-    // Timestamps for audit trail
-    DateTime? createdAt,
-    DateTime? lastLogin,
-    DateTime? lastSynced,
+    // Timestamps for audit trail - Using TimestampConverter for Firestore compatibility
+    @TimestampConverter() DateTime? createdAt,
+    @TimestampConverter() DateTime? lastLogin,
+    @TimestampConverter() DateTime? lastSynced,
+    @TimestampConverter()
     DateTime? requestedAt, // When user registration was requested
-    DateTime? approvedAt, // When user was approved
-    DateTime? rejectedAt, // When user was rejected
-    DateTime? suspendedAt, // When user was suspended
+    @TimestampConverter() DateTime? approvedAt, // When user was approved
+    @TimestampConverter() DateTime? rejectedAt, // When user was rejected
+    @TimestampConverter() DateTime? suspendedAt, // When user was suspended
 
     // Approval workflow fields
     String? approvedBy, // UID of user who approved
@@ -48,8 +50,8 @@ class AppUser with _$AppUser {
     Map<String, dynamic> organizationSettings, // Org-specific user settings
 
     // Security and compliance
-    DateTime? passwordLastChanged,
-    DateTime? termsAcceptedAt,
+    @TimestampConverter() DateTime? passwordLastChanged,
+    @TimestampConverter() DateTime? termsAcceptedAt,
     String? preferredLanguage,
     @Default([]) List<String> deviceTokens, // For push notifications
 
@@ -270,4 +272,48 @@ class AppUser with _$AppUser {
   }
 
   bool get isValid => validationErrors.isEmpty;
+}
+
+// Timestamp Converter Class for handling Firestore Timestamps
+class TimestampConverter implements JsonConverter<DateTime?, Object?> {
+  const TimestampConverter();
+
+  @override
+  DateTime? fromJson(Object? json) {
+    if (json == null) return null;
+
+    // Handle Firestore Timestamp objects
+    if (json is Timestamp) {
+      return json.toDate();
+    }
+
+    // Handle String timestamps (ISO format)
+    if (json is String) {
+      try {
+        return DateTime.parse(json);
+      } catch (e) {
+        print('Error parsing timestamp string: $json - $e');
+        return null;
+      }
+    }
+
+    // Handle int/double (milliseconds since epoch)
+    if (json is int) {
+      return DateTime.fromMillisecondsSinceEpoch(json);
+    }
+
+    if (json is double) {
+      return DateTime.fromMillisecondsSinceEpoch(json.toInt());
+    }
+
+    print('Unknown timestamp format: ${json.runtimeType} - $json');
+    return null;
+  }
+
+  @override
+  Object? toJson(DateTime? dateTime) {
+    if (dateTime == null) return null;
+    // Return as ISO string for JSON serialization
+    return dateTime.toIso8601String();
+  }
 }

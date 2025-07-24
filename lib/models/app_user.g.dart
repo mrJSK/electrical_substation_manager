@@ -22,27 +22,13 @@ _$AppUserImpl _$$AppUserImplFromJson(Map<String, dynamic> json) =>
       roleData: json['roleData'] as Map<String, dynamic>? ?? const {},
       isActive: json['isActive'] as bool? ?? true,
       status: json['status'] as String? ?? 'pending',
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      lastLogin: json['lastLogin'] == null
-          ? null
-          : DateTime.parse(json['lastLogin'] as String),
-      lastSynced: json['lastSynced'] == null
-          ? null
-          : DateTime.parse(json['lastSynced'] as String),
-      requestedAt: json['requestedAt'] == null
-          ? null
-          : DateTime.parse(json['requestedAt'] as String),
-      approvedAt: json['approvedAt'] == null
-          ? null
-          : DateTime.parse(json['approvedAt'] as String),
-      rejectedAt: json['rejectedAt'] == null
-          ? null
-          : DateTime.parse(json['rejectedAt'] as String),
-      suspendedAt: json['suspendedAt'] == null
-          ? null
-          : DateTime.parse(json['suspendedAt'] as String),
+      createdAt: const TimestampConverter().fromJson(json['createdAt']),
+      lastLogin: const TimestampConverter().fromJson(json['lastLogin']),
+      lastSynced: const TimestampConverter().fromJson(json['lastSynced']),
+      requestedAt: const TimestampConverter().fromJson(json['requestedAt']),
+      approvedAt: const TimestampConverter().fromJson(json['approvedAt']),
+      rejectedAt: const TimestampConverter().fromJson(json['rejectedAt']),
+      suspendedAt: const TimestampConverter().fromJson(json['suspendedAt']),
       approvedBy: json['approvedBy'] as String?,
       rejectedBy: json['rejectedBy'] as String?,
       suspendedBy: json['suspendedBy'] as String?,
@@ -51,12 +37,10 @@ _$AppUserImpl _$$AppUserImplFromJson(Map<String, dynamic> json) =>
       tenantId: json['tenantId'] as String?,
       organizationSettings:
           json['organizationSettings'] as Map<String, dynamic>? ?? const {},
-      passwordLastChanged: json['passwordLastChanged'] == null
-          ? null
-          : DateTime.parse(json['passwordLastChanged'] as String),
-      termsAcceptedAt: json['termsAcceptedAt'] == null
-          ? null
-          : DateTime.parse(json['termsAcceptedAt'] as String),
+      passwordLastChanged:
+          const TimestampConverter().fromJson(json['passwordLastChanged']),
+      termsAcceptedAt:
+          const TimestampConverter().fromJson(json['termsAcceptedAt']),
       preferredLanguage: json['preferredLanguage'] as String?,
       deviceTokens: (json['deviceTokens'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -83,13 +67,13 @@ Map<String, dynamic> _$$AppUserImplToJson(_$AppUserImpl instance) =>
       'roleData': instance.roleData,
       'isActive': instance.isActive,
       'status': instance.status,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'lastLogin': instance.lastLogin?.toIso8601String(),
-      'lastSynced': instance.lastSynced?.toIso8601String(),
-      'requestedAt': instance.requestedAt?.toIso8601String(),
-      'approvedAt': instance.approvedAt?.toIso8601String(),
-      'rejectedAt': instance.rejectedAt?.toIso8601String(),
-      'suspendedAt': instance.suspendedAt?.toIso8601String(),
+      'createdAt': const TimestampConverter().toJson(instance.createdAt),
+      'lastLogin': const TimestampConverter().toJson(instance.lastLogin),
+      'lastSynced': const TimestampConverter().toJson(instance.lastSynced),
+      'requestedAt': const TimestampConverter().toJson(instance.requestedAt),
+      'approvedAt': const TimestampConverter().toJson(instance.approvedAt),
+      'rejectedAt': const TimestampConverter().toJson(instance.rejectedAt),
+      'suspendedAt': const TimestampConverter().toJson(instance.suspendedAt),
       'approvedBy': instance.approvedBy,
       'rejectedBy': instance.rejectedBy,
       'suspendedBy': instance.suspendedBy,
@@ -97,8 +81,10 @@ Map<String, dynamic> _$$AppUserImplToJson(_$AppUserImpl instance) =>
       'suspensionReason': instance.suspensionReason,
       'tenantId': instance.tenantId,
       'organizationSettings': instance.organizationSettings,
-      'passwordLastChanged': instance.passwordLastChanged?.toIso8601String(),
-      'termsAcceptedAt': instance.termsAcceptedAt?.toIso8601String(),
+      'passwordLastChanged':
+          const TimestampConverter().toJson(instance.passwordLastChanged),
+      'termsAcceptedAt':
+          const TimestampConverter().toJson(instance.termsAcceptedAt),
       'preferredLanguage': instance.preferredLanguage,
       'deviceTokens': instance.deviceTokens,
       'isEmailVerified': instance.isEmailVerified,
