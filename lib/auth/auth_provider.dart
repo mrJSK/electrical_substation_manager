@@ -2,10 +2,31 @@
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../models/app_user.dart';
+import '../models/dynamic_role.dart';
 import '../repositories/user_repository.dart';
 
 part 'auth_provider.g.dart';
+part 'auth_provider.freezed.dart'; // Add this for Freezed
+
+// Auth Error Enum
+enum AuthError {
+  networkError,
+  permissionDenied,
+  userNotFound,
+  invalidRole,
+  unknown,
+}
+
+// Auth State with Freezed
+@freezed
+class AuthState with _$AuthState {
+  const factory AuthState.loading() = _Loading;
+  const factory AuthState.authenticated(AppUser user) = _Authenticated;
+  const factory AuthState.unauthenticated() = _Unauthenticated;
+  const factory AuthState.error(AuthError error, String message) = _Error;
+}
 
 // User Repository Provider
 @riverpod
@@ -102,9 +123,17 @@ class AuthStateNotifier extends _$AuthStateNotifier {
           email: firebaseUser.email ?? '',
           name: firebaseUser.displayName ?? 'New User',
           photoUrl: firebaseUser.photoURL,
-          role: UserRole.substationUser,
-          permissions:
-              RoleConfig.getPermissionsForRole(UserRole.substationUser),
+          role: const DynamicRole(
+            id: 'default_user',
+            name: 'basic_user',
+            displayName: 'Basic User',
+            hierarchyLevel: 99, // Lowest level
+            organizationId: 'default',
+            permissions: ['view_own', 'basic_operations'],
+            config: {'hierarchyAccess': 'own', 'dashboardType': 'basic'},
+          ),
+          organizationId: 'default',
+          permissions: const [],
           roleData: const {},
           lastLogin: DateTime.now(),
           isActive: true,
@@ -160,7 +189,6 @@ class AuthStateNotifier extends _$AuthStateNotifier {
   Future<void> signInWithGoogle() async {
     try {
       state = const AuthState.loading();
-
       // This will trigger the auth state change automatically
       // No need to manually handle the result here
     } catch (e) {
@@ -216,7 +244,11 @@ bool hasPermission(HasPermissionRef ref, String permission) {
 List<String> accessibleScreens(AccessibleScreensRef ref) {
   final user = ref.watch(currentUserProvider);
   if (user == null) return [];
-  return RoleConfig.getScreensForRole(user.role);
+
+  // Since we're using DynamicRole now, get screens from role config
+  final roleConfig = user.role.config;
+  return (roleConfig['accessibleScreens'] as List<dynamic>?)?.cast<String>() ??
+      [];
 }
 
 // Helper provider to check if user can access specific hierarchy
@@ -226,24 +258,25 @@ bool canAccessHierarchy(CanAccessHierarchyRef ref, String hierarchyId) {
   return user?.canAccessHierarchy(hierarchyId) ?? false;
 }
 
-// Helper provider to get user's role
+// Helper provider to get user's dynamic role
 @riverpod
-UserRole? userRole(UserRoleRef ref) {
+DynamicRole? userRole(UserRoleRef ref) {
   final user = ref.watch(currentUserProvider);
   return user?.role;
 }
 
-// Helper provider to check if user has specific role
+// Helper provider to check if user has specific role ID
 @riverpod
-bool hasRole(HasRoleRef ref, UserRole role) {
+bool hasRoleId(HasRoleIdRef ref, String roleId) {
   final userRole = ref.watch(userRoleProvider);
-  return userRole == role;
+  return userRole?.id == roleId;
 }
 
-// Helper provider to check if user is admin
+// Helper provider to check if user is admin (top level)
 @riverpod
 bool isAdmin(IsAdminRef ref) {
-  return ref.watch(hasRoleProvider(UserRole.admin));
+  final userRole = ref.watch(userRoleProvider);
+  return userRole?.hierarchyLevel == 1;
 }
 
 // Helper provider to get loading state

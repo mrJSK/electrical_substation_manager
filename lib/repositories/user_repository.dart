@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/app_user.dart';
+import '../models/dynamic_role.dart';
 
 abstract class UserRepository {
-  Future<AppUser?> getUserProfile(String uid);
-  Future<void> updateUserProfile(AppUser user);
-  Future<void> createUserProfile(AppUser user);
-  Stream<AppUser?> watchUserProfile(String uid);
-  Future<List<AppUser>> getUsersByRole(UserRole role);
-  Future<void> deleteUserProfile(String uid);
+  Future<AppUser?> getUserProfile(String uid); // ← Fix return type
+  Future<void> updateUserProfile(AppUser user); // ← Fix return type
+  Future<void> createUserProfile(AppUser user); // ← Fix return type
+  Stream<AppUser?> watchUserProfile(String uid); // ← Fix return type
+  Future<List<AppUser>> getUsersByRole(DynamicRole role); // ← Use DynamicRole
+  Future<void> deleteUserProfile(String uid); // ← Fix return type
 }
 
 class FirestoreUserRepository implements UserRepository {
@@ -69,11 +70,11 @@ class FirestoreUserRepository implements UserRepository {
   }
 
   @override
-  Future<List<AppUser>> getUsersByRole(UserRole role) async {
+  Future<List<AppUser>> getUsersByRole(DynamicRole role) async {
     try {
       final query = await _firestore
           .collection(_collection)
-          .where('role', isEqualTo: role.name)
+          .where('role.id', isEqualTo: role.id) // ← Updated for DynamicRole
           .get();
 
       return query.docs.map((doc) {

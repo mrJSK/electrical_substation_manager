@@ -233,7 +233,7 @@ class _HasPermissionProviderElement extends AutoDisposeProviderElement<bool>
   String get permission => (origin as HasPermissionProvider).permission;
 }
 
-String _$accessibleScreensHash() => r'55fb829b8d2ddcf1567f12d6470f83979a115710';
+String _$accessibleScreensHash() => r'e3112ba67ad273d3a2828398278429716808bf89';
 
 /// See also [accessibleScreens].
 @ProviderFor(accessibleScreens)
@@ -378,11 +378,11 @@ class _CanAccessHierarchyProviderElement
   String get hierarchyId => (origin as CanAccessHierarchyProvider).hierarchyId;
 }
 
-String _$userRoleHash() => r'1dffcb16d883c4a80a28d92e5a31020fcf6bd103';
+String _$userRoleHash() => r'a1ac23978aba6d814e35a5097e8538df2189746c';
 
 /// See also [userRole].
 @ProviderFor(userRole)
-final userRoleProvider = AutoDisposeProvider<UserRole?>.internal(
+final userRoleProvider = AutoDisposeProvider<DynamicRole?>.internal(
   userRole,
   name: r'userRoleProvider',
   debugGetCreateSourceHash:
@@ -391,33 +391,33 @@ final userRoleProvider = AutoDisposeProvider<UserRole?>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef UserRoleRef = AutoDisposeProviderRef<UserRole?>;
-String _$hasRoleHash() => r'405cb11be59828516214806f72e75ba65098ddcc';
+typedef UserRoleRef = AutoDisposeProviderRef<DynamicRole?>;
+String _$hasRoleIdHash() => r'5d8e913915d0af5e26a31fd52bfbea1adb12242c';
 
-/// See also [hasRole].
-@ProviderFor(hasRole)
-const hasRoleProvider = HasRoleFamily();
+/// See also [hasRoleId].
+@ProviderFor(hasRoleId)
+const hasRoleIdProvider = HasRoleIdFamily();
 
-/// See also [hasRole].
-class HasRoleFamily extends Family<bool> {
-  /// See also [hasRole].
-  const HasRoleFamily();
+/// See also [hasRoleId].
+class HasRoleIdFamily extends Family<bool> {
+  /// See also [hasRoleId].
+  const HasRoleIdFamily();
 
-  /// See also [hasRole].
-  HasRoleProvider call(
-    UserRole role,
+  /// See also [hasRoleId].
+  HasRoleIdProvider call(
+    String roleId,
   ) {
-    return HasRoleProvider(
-      role,
+    return HasRoleIdProvider(
+      roleId,
     );
   }
 
   @override
-  HasRoleProvider getProviderOverride(
-    covariant HasRoleProvider provider,
+  HasRoleIdProvider getProviderOverride(
+    covariant HasRoleIdProvider provider,
   ) {
     return call(
-      provider.role,
+      provider.roleId,
     );
   }
 
@@ -433,93 +433,93 @@ class HasRoleFamily extends Family<bool> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'hasRoleProvider';
+  String? get name => r'hasRoleIdProvider';
 }
 
-/// See also [hasRole].
-class HasRoleProvider extends AutoDisposeProvider<bool> {
-  /// See also [hasRole].
-  HasRoleProvider(
-    UserRole role,
+/// See also [hasRoleId].
+class HasRoleIdProvider extends AutoDisposeProvider<bool> {
+  /// See also [hasRoleId].
+  HasRoleIdProvider(
+    String roleId,
   ) : this._internal(
-          (ref) => hasRole(
-            ref as HasRoleRef,
-            role,
+          (ref) => hasRoleId(
+            ref as HasRoleIdRef,
+            roleId,
           ),
-          from: hasRoleProvider,
-          name: r'hasRoleProvider',
+          from: hasRoleIdProvider,
+          name: r'hasRoleIdProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$hasRoleHash,
-          dependencies: HasRoleFamily._dependencies,
-          allTransitiveDependencies: HasRoleFamily._allTransitiveDependencies,
-          role: role,
+                  : _$hasRoleIdHash,
+          dependencies: HasRoleIdFamily._dependencies,
+          allTransitiveDependencies: HasRoleIdFamily._allTransitiveDependencies,
+          roleId: roleId,
         );
 
-  HasRoleProvider._internal(
+  HasRoleIdProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.role,
+    required this.roleId,
   }) : super.internal();
 
-  final UserRole role;
+  final String roleId;
 
   @override
   Override overrideWith(
-    bool Function(HasRoleRef provider) create,
+    bool Function(HasRoleIdRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: HasRoleProvider._internal(
-        (ref) => create(ref as HasRoleRef),
+      override: HasRoleIdProvider._internal(
+        (ref) => create(ref as HasRoleIdRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        role: role,
+        roleId: roleId,
       ),
     );
   }
 
   @override
   AutoDisposeProviderElement<bool> createElement() {
-    return _HasRoleProviderElement(this);
+    return _HasRoleIdProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is HasRoleProvider && other.role == role;
+    return other is HasRoleIdProvider && other.roleId == roleId;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, role.hashCode);
+    hash = _SystemHash.combine(hash, roleId.hashCode);
 
     return _SystemHash.finish(hash);
   }
 }
 
-mixin HasRoleRef on AutoDisposeProviderRef<bool> {
-  /// The parameter `role` of this provider.
-  UserRole get role;
+mixin HasRoleIdRef on AutoDisposeProviderRef<bool> {
+  /// The parameter `roleId` of this provider.
+  String get roleId;
 }
 
-class _HasRoleProviderElement extends AutoDisposeProviderElement<bool>
-    with HasRoleRef {
-  _HasRoleProviderElement(super.provider);
+class _HasRoleIdProviderElement extends AutoDisposeProviderElement<bool>
+    with HasRoleIdRef {
+  _HasRoleIdProviderElement(super.provider);
 
   @override
-  UserRole get role => (origin as HasRoleProvider).role;
+  String get roleId => (origin as HasRoleIdProvider).roleId;
 }
 
-String _$isAdminHash() => r'4b6f23dbdde407ce39c085c5565826baff9e6d47';
+String _$isAdminHash() => r'4d77ff570d88ec886aa02fc548015c78df63faf5';
 
 /// See also [isAdmin].
 @ProviderFor(isAdmin)
@@ -592,7 +592,7 @@ final connectionStatusProvider =
 );
 
 typedef _$ConnectionStatus = AutoDisposeNotifier<bool>;
-String _$authStateNotifierHash() => r'48f66fb6cd218c359507cc41f7259b407e6cbc5b';
+String _$authStateNotifierHash() => r'aaae912b139c695cfad4714b2f0432bec74aa36e';
 
 /// See also [AuthStateNotifier].
 @ProviderFor(AuthStateNotifier)

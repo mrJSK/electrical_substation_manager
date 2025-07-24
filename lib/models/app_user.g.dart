@@ -12,7 +12,8 @@ _$AppUserImpl _$$AppUserImplFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String,
       name: json['name'] as String,
       photoUrl: json['photoUrl'] as String?,
-      role: $enumDecode(_$UserRoleEnumMap, json['role']),
+      role: DynamicRole.fromJson(json['role'] as Map<String, dynamic>),
+      organizationId: json['organizationId'] as String,
       hierarchyId: json['hierarchyId'] as String?,
       permissions: (json['permissions'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -34,7 +35,8 @@ Map<String, dynamic> _$$AppUserImplToJson(_$AppUserImpl instance) =>
       'email': instance.email,
       'name': instance.name,
       'photoUrl': instance.photoUrl,
-      'role': _$UserRoleEnumMap[instance.role]!,
+      'role': instance.role,
+      'organizationId': instance.organizationId,
       'hierarchyId': instance.hierarchyId,
       'permissions': instance.permissions,
       'roleData': instance.roleData,
@@ -42,15 +44,3 @@ Map<String, dynamic> _$$AppUserImplToJson(_$AppUserImpl instance) =>
       'isActive': instance.isActive,
       'lastSynced': instance.lastSynced?.toIso8601String(),
     };
-
-const _$UserRoleEnumMap = {
-  UserRole.admin: 'admin',
-  UserRole.stateManager: 'stateManager',
-  UserRole.companyManager: 'companyManager',
-  UserRole.zoneManager: 'zoneManager',
-  UserRole.circleManager: 'circleManager',
-  UserRole.divisionManager: 'divisionManager',
-  UserRole.subdivisionManager: 'subdivisionManager',
-  UserRole.substationUser: 'substationUser',
-  UserRole.unknown: 'unknown',
-};
