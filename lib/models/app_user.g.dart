@@ -20,13 +20,54 @@ _$AppUserImpl _$$AppUserImplFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       roleData: json['roleData'] as Map<String, dynamic>? ?? const {},
+      isActive: json['isActive'] as bool? ?? true,
+      status: json['status'] as String? ?? 'pending',
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
       lastLogin: json['lastLogin'] == null
           ? null
           : DateTime.parse(json['lastLogin'] as String),
-      isActive: json['isActive'] as bool? ?? true,
       lastSynced: json['lastSynced'] == null
           ? null
           : DateTime.parse(json['lastSynced'] as String),
+      requestedAt: json['requestedAt'] == null
+          ? null
+          : DateTime.parse(json['requestedAt'] as String),
+      approvedAt: json['approvedAt'] == null
+          ? null
+          : DateTime.parse(json['approvedAt'] as String),
+      rejectedAt: json['rejectedAt'] == null
+          ? null
+          : DateTime.parse(json['rejectedAt'] as String),
+      suspendedAt: json['suspendedAt'] == null
+          ? null
+          : DateTime.parse(json['suspendedAt'] as String),
+      approvedBy: json['approvedBy'] as String?,
+      rejectedBy: json['rejectedBy'] as String?,
+      suspendedBy: json['suspendedBy'] as String?,
+      rejectionReason: json['rejectionReason'] as String?,
+      suspensionReason: json['suspensionReason'] as String?,
+      tenantId: json['tenantId'] as String?,
+      organizationSettings:
+          json['organizationSettings'] as Map<String, dynamic>? ?? const {},
+      passwordLastChanged: json['passwordLastChanged'] == null
+          ? null
+          : DateTime.parse(json['passwordLastChanged'] as String),
+      termsAcceptedAt: json['termsAcceptedAt'] == null
+          ? null
+          : DateTime.parse(json['termsAcceptedAt'] as String),
+      preferredLanguage: json['preferredLanguage'] as String?,
+      deviceTokens: (json['deviceTokens'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      isEmailVerified: json['isEmailVerified'] as bool? ?? false,
+      isPhoneVerified: json['isPhoneVerified'] as bool? ?? false,
+      profileCompleteness:
+          (json['profileCompleteness'] as num?)?.toDouble() ?? 0.0,
+      preferences: json['preferences'] as Map<String, dynamic>? ?? const {},
+      metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
     );
 
 Map<String, dynamic> _$$AppUserImplToJson(_$AppUserImpl instance) =>
@@ -40,7 +81,29 @@ Map<String, dynamic> _$$AppUserImplToJson(_$AppUserImpl instance) =>
       'hierarchyId': instance.hierarchyId,
       'permissions': instance.permissions,
       'roleData': instance.roleData,
-      'lastLogin': instance.lastLogin?.toIso8601String(),
       'isActive': instance.isActive,
+      'status': instance.status,
+      'createdAt': instance.createdAt?.toIso8601String(),
+      'lastLogin': instance.lastLogin?.toIso8601String(),
       'lastSynced': instance.lastSynced?.toIso8601String(),
+      'requestedAt': instance.requestedAt?.toIso8601String(),
+      'approvedAt': instance.approvedAt?.toIso8601String(),
+      'rejectedAt': instance.rejectedAt?.toIso8601String(),
+      'suspendedAt': instance.suspendedAt?.toIso8601String(),
+      'approvedBy': instance.approvedBy,
+      'rejectedBy': instance.rejectedBy,
+      'suspendedBy': instance.suspendedBy,
+      'rejectionReason': instance.rejectionReason,
+      'suspensionReason': instance.suspensionReason,
+      'tenantId': instance.tenantId,
+      'organizationSettings': instance.organizationSettings,
+      'passwordLastChanged': instance.passwordLastChanged?.toIso8601String(),
+      'termsAcceptedAt': instance.termsAcceptedAt?.toIso8601String(),
+      'preferredLanguage': instance.preferredLanguage,
+      'deviceTokens': instance.deviceTokens,
+      'isEmailVerified': instance.isEmailVerified,
+      'isPhoneVerified': instance.isPhoneVerified,
+      'profileCompleteness': instance.profileCompleteness,
+      'preferences': instance.preferences,
+      'metadata': instance.metadata,
     };
