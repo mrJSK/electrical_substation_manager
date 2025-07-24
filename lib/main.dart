@@ -1,41 +1,45 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:responsive_framework/responsive_framework.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'web/router/web_router.dart';
 import 'firebase_options.dart';
-import 'auth/auth_wrapper.dart'; // Add this import
+import 'package:firebase_core/firebase_core.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const ProviderScope(child: MyApp()));
+
+  runApp(
+    const ProviderScope(
+      child: ElectriAdminApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ElectriAdminApp extends StatelessWidget {
+  const ElectriAdminApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Substation Manager Pro',
-      debugShowCheckedModeBanner: false,
-      builder: (context, child) => ResponsiveBreakpoints.builder(
-        child: child!,
-        breakpoints: [
-          const Breakpoint(start: 0, end: 450, name: MOBILE),
-          const Breakpoint(start: 451, end: 900, name: TABLET),
-          const Breakpoint(start: 901, end: 1920, name: DESKTOP),
-          const Breakpoint(start: 1921, end: double.infinity, name: '4K'),
-        ],
-      ),
+    return MaterialApp.router(
+      title: 'ElectriAdmin - Substation Management',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
         useMaterial3: true,
+        textTheme: GoogleFonts.interTextTheme(),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF3B82F6),
+          brightness: Brightness.light,
+        ),
       ),
-      home: const AuthWrapper(), // Change this line
+      routerConfig: webRouter,
+      debugShowCheckedModeBanner: false,
     );
   }
 }
