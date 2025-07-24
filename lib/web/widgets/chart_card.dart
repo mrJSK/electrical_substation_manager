@@ -1,14 +1,19 @@
+// lib/web/widgets/chart_card.dart
 import 'package:flutter/material.dart';
 
 class ChartCard extends StatelessWidget {
   final String title;
+  final String? subtitle; // 🔥 ADD: Optional subtitle
   final Widget chart;
+  final List<Widget>? actions; // 🔥 ADD: Optional actions
 
   const ChartCard({
-    super.key,
+    Key? key,
     required this.title,
+    this.subtitle,
     required this.chart,
-  });
+    this.actions,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,15 +33,36 @@ class ChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (actions != null) Row(children: actions!),
+            ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           SizedBox(
             height: 200,
             child: chart,

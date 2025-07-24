@@ -1,12 +1,11 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'web/router/web_router.dart';
-import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import 'firebase_options.dart';
+import 'services/location_service.dart';
+import 'web/router/web_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +15,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  // Load states/cities JSON for the organization builder
+  await LocationService.initializeLocationData();
+
   runApp(
     const ProviderScope(
       child: ElectriAdminApp(),
@@ -24,7 +26,7 @@ void main() async {
 }
 
 class ElectriAdminApp extends StatelessWidget {
-  const ElectriAdminApp({super.key});
+  const ElectriAdminApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

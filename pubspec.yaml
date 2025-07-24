@@ -69,6 +69,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/google_logo.webp
+    - assets/states_cities.json
 
 flutter_launcher_icons:
   android: "launcher_icon"

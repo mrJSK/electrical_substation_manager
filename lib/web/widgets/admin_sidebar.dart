@@ -44,6 +44,16 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
       gradient: [Color(0xFF10B981), Color(0xFF059669)],
       description: 'Manage Organizations',
     ),
+    // 🔥 NEW: Organization Builder
+    // SidebarItem(
+    //   icon: Icons.account_tree_rounded,
+    //   title: 'Organization Builder',
+    //   route: '/admin/organization-builder',
+    //   gradient: [Color(0xFFEF4444), Color(0xFFDC2626)],
+    //   description: 'Build Dynamic Structures',
+    //   badge: 'NEW',
+    //   isHighlighted: true, // Make it stand out as new feature
+    // ),
     SidebarItem(
       icon: Icons.people_rounded,
       title: 'User Management',
@@ -64,14 +74,23 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
       icon: Icons.electrical_services_rounded,
       title: 'Substations',
       route: '/admin/substations',
-      gradient: [Color(0xFFEF4444), Color(0xFFDC2626)],
+      gradient: [Color(0xFF06B6D4), Color(0xFF0891B2)],
       description: 'Power Infrastructure',
+    ),
+    // 🔥 NEW: Hierarchy Management (Sub-feature)
+    SidebarItem(
+      icon: Icons.schema_rounded,
+      title: 'Hierarchy Management',
+      route: '/admin/hierarchy',
+      gradient: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+      description: 'Define Organization Levels',
+      isSubItem: true, // Indent slightly to show relation
     ),
     SidebarItem(
       icon: Icons.analytics_rounded,
       title: 'Analytics',
       route: '/admin/analytics',
-      gradient: [Color(0xFF06B6D4), Color(0xFF0891B2)],
+      gradient: [Color(0xFF10B981), Color(0xFF059669)],
       description: 'Reports & Insights',
     ),
     SidebarItem(
@@ -119,7 +138,6 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // ✅ Safe to access context here
     final currentRoute = GoRouterState.of(context).uri.toString();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -150,15 +168,36 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
     ref.read(selectedRouteProvider.notifier).state = item.route;
     context.go(item.route);
 
-    // Haptic feedback for better UX
-    // HapticFeedback.lightImpact();
+    // Show success message for Organization Builder
+    if (item.route == '/admin/organization-builder') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.rocket_launch_rounded, color: Colors.white),
+              SizedBox(width: 12),
+              Text(
+                  'Opening Organization Builder - Create your dynamic structure!'),
+            ],
+          ),
+          backgroundColor: Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   Widget _buildMenuItem(SidebarItem item, bool isSelected) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      margin: EdgeInsets.symmetric(
+        horizontal: 8,
+        vertical: 3,
+      ).copyWith(
+        left: item.isSubItem ? 16 : 8, // Indent sub-items
+      ),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
@@ -184,15 +223,24 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
-                    : null,
+                    : item.isHighlighted // Special highlight for new features
+                        ? LinearGradient(
+                            colors: [
+                              Colors.amber.withOpacity(0.1),
+                              Colors.orange.withOpacity(0.05),
+                            ],
+                          )
+                        : null,
                 borderRadius: BorderRadius.circular(12),
-                border: isSelected
+                border: isSelected || item.isHighlighted
                     ? Border.all(
-                        color: Colors.white.withOpacity(0.4),
+                        color: isSelected
+                            ? Colors.white.withOpacity(0.4)
+                            : Colors.amber.withOpacity(0.3),
                         width: 1.5,
                       )
                     : null,
-                boxShadow: isSelected
+                boxShadow: isSelected || item.isHighlighted
                     ? [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -215,15 +263,41 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                       boxShadow: [
                         BoxShadow(
                           color: item.gradient[0].withOpacity(0.4),
-                          blurRadius: isSelected ? 8 : 4,
+                          blurRadius: isSelected || item.isHighlighted ? 8 : 4,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: Icon(
-                      item.icon,
-                      color: Colors.white,
-                      size: 20,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(
+                          item.icon,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        // Pulse animation for highlighted items
+                        if (item.isHighlighted && !isSelected)
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: Colors.amber,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.amber.withOpacity(0.6),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
 
@@ -237,15 +311,41 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              item.title,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    item.title,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                // "NEW" indicator for highlighted items
+                                if (item.isHighlighted && !isSelected)
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'NEW',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                             if (item.description != null)
                               Text(
@@ -261,7 +361,7 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                     ),
 
                     // Badge with animation
-                    if (item.badge != null)
+                    if (item.badge != null && !item.isHighlighted)
                       AnimatedScale(
                         duration: const Duration(milliseconds: 200),
                         scale: _expandAnimation.value,
@@ -293,7 +393,7 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                           ),
                         ),
                       ),
-                  ] else if (item.badge != null) ...[
+                  ] else if (item.badge != null && !item.isHighlighted) ...[
                     // Show badge as dot when collapsed
                     const SizedBox(width: 4),
                     Container(
@@ -395,7 +495,7 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                               ),
                             ),
                             Text(
-                              'Substation Manager Pro',
+                              'SaaS Platform Pro',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 12,
@@ -458,7 +558,7 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
               ),
             ),
 
-            // Enhanced User Profile Section
+            // Enhanced User Profile Section with Organization Context
             if (widget.expanded)
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
@@ -513,7 +613,7 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Admin User',
+                              'Super Admin',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w600,
@@ -521,7 +621,7 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                               ),
                             ),
                             Text(
-                              'System Administrator',
+                              'Multi-Tenant Manager',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.8),
                                 fontSize: 12,
@@ -549,6 +649,21 @@ class _AdminSidebarState extends ConsumerState<AdminSidebar>
                                 Text('Profile'),
                               ],
                             ),
+                          ),
+                          PopupMenuItem(
+                            child: Row(
+                              children: [
+                                Icon(Icons.account_tree_outlined, size: 18),
+                                SizedBox(width: 12),
+                                Text('Organization Builder'),
+                              ],
+                            ),
+                            onTap: () {
+                              // Navigate to organization builder from user menu
+                              Future.delayed(Duration.zero, () {
+                                context.go('/admin/organization-builder');
+                              });
+                            },
                           ),
                           PopupMenuItem(
                             child: Row(
@@ -600,6 +715,8 @@ class SidebarItem {
   final String? badge;
   final String? description;
   final bool isUrgent;
+  final bool isHighlighted; // 🔥 NEW: For highlighting new features
+  final bool isSubItem; // 🔥 NEW: For sub-menu items
 
   SidebarItem({
     required this.icon,
@@ -609,5 +726,7 @@ class SidebarItem {
     this.badge,
     this.description,
     this.isUrgent = false,
+    this.isHighlighted = false, // 🔥 NEW
+    this.isSubItem = false, // 🔥 NEW
   });
 }
