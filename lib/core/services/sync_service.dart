@@ -31,11 +31,6 @@ class SyncService {
       // Since our Isar cache stores processed data, we don't need to push it back
       // This is more for demonstration of the sync pattern
 
-      // In a real app, you might have separate collections for:
-      // - Offline created records
-      // - Modified records
-      // - Deleted records
-
       debugPrint('Push sync completed');
     } catch (e) {
       debugPrint('Push sync failed: $e');
@@ -92,7 +87,6 @@ class SyncService {
           final user = UserModel.fromFirestore(doc);
 
           // Update local cache with fresh data
-          // This will invalidate old cache and store new data
           await _updateLocalUserCache(user);
         }
 
@@ -113,7 +107,7 @@ class SyncService {
 
       // Query for dashboard configs modified since last sync
       final query = _firestore
-          .collection('dashboard_configs')
+          .collection(AppConstants.dashboardConfigsCollection)
           .where('updatedAt', isGreaterThan: Timestamp.fromDate(lastSync))
           .limit(50); // Smaller batch for complex data
 
@@ -148,10 +142,6 @@ class SyncService {
 
   // Invalidate related caches when dashboard configs change
   Future<void> _invalidateRelatedCaches(String configId) async {
-    // In a real app, you'd track which users use which configs
-    // For now, we'll just clear all dashboard caches
-    // This could be optimized by maintaining a mapping
-
     debugPrint('Invalidating caches for config: $configId');
     // The cache will be refreshed when next accessed
   }

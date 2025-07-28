@@ -1,4 +1,3 @@
-// lib/core/services/connectivity_service.dart
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
@@ -15,8 +14,7 @@ class ConnectivityService extends ChangeNotifier {
   ConnectivityService._internal();
 
   final Connectivity _connectivity = Connectivity();
-  StreamSubscription<List<ConnectivityResult>>?
-      _connectivitySubscription; // Updated type
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   ConnectivityStatus _status = ConnectivityStatus.checking;
   ConnectivityStatus get status => _status;
@@ -89,7 +87,7 @@ class ConnectivityService extends ChangeNotifier {
     _updateStatus(results);
   }
 
-  // Get detailed connection info (optional enhancement)
+  // Get detailed connection info
   Future<List<ConnectivityResult>> getConnectionTypes() async {
     return await _connectivity.checkConnectivity();
   }

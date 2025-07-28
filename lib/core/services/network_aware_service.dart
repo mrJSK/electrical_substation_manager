@@ -121,7 +121,7 @@ mixin NetworkAwareService {
       }
     }
 
-    // Wait for all online operations - FIXED: Use the extension method correctly
+    // Wait for all online operations
     final completedOperations =
         await FutureExtensions.allSettled(futures.values);
     int index = 0;
@@ -131,7 +131,6 @@ mixin NetworkAwareService {
       if (result.hasValue) {
         results[key] = result.value;
       } else {
-        // Use fallback if operation failed
         results[key] = operations[key]?.getOfflineFallback();
       }
     }

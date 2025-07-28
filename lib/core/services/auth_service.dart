@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../constants/app_constants.dart';
@@ -92,7 +91,6 @@ class FirebaseAuthProvider implements AuthProvider {
 class AuthService with NetworkAwareService {
   final AuthProvider _authProvider;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
 
   // Cache for user profiles
   final Map<String, UserModel> _userCache = {};
@@ -106,7 +104,7 @@ class AuthService with NetworkAwareService {
   Stream<User?> get authStateChanges => _authProvider.authStateChanges;
   User? get currentUser => _authProvider.currentUser;
 
-  // Enhanced sign in with user profile management and cache warming
+  // Enhanced sign in with user profile management
   Future<UserCredential?> signInWithGoogle() async {
     return executeOnlineOperation(
       () async {
@@ -165,24 +163,14 @@ class AuthService with NetworkAwareService {
     );
   }
 
-  // Optimized user profile management using Cloud Functions where possible
+  // User profile management
   Future<void> _createOrUpdateUserProfile(User user) async {
     try {
-      // Try Cloud Function first for optimal performance
-      final callable = _functions.httpsCallable('manageUserProfile');
-      await callable.call({
-        'uid': user.uid,
-        'email': user.email,
-        'name': user.displayName ?? user.email!.split('@')[0],
-        'photoUrl': user.photoURL,
-        'action': 'createOrUpdate',
-      });
-
-      debugPrint('User profile managed via Cloud Function: ${user.uid}');
-    } catch (e) {
-      debugPrint('Cloud Function failed, using fallback: $e');
-      // Fallback to direct Firestore operations
       await _createOrUpdateUserProfileFallback(user);
+      debugPrint('User profile managed: ${user.uid}');
+    } catch (e) {
+      debugPrint('Failed to create/update user profile: $e');
+      rethrow;
     }
   }
 
@@ -198,15 +186,14 @@ class AuthService with NetworkAwareService {
         email: user.email!,
         name: user.displayName ?? user.email!.split('@')[0],
         photoUrl: user.photoURL,
-        organizationId:
-            'default_org', // You might want to handle this differently
-        roles: ['operator'], // Default role
+        organizationId: AppConstants.defaultOrganization,
+        roles: AppConstants.defaultRoles,
         permissions: {},
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      await userDoc.set(newUser.toJson());
+      await userDoc.set(newUser.toFirestore());
 
       // Cache the new user
       _userCache[user.uid] = newUser;
@@ -228,19 +215,13 @@ class AuthService with NetworkAwareService {
     }
   }
 
-  // Pre-load frequently accessed data after login for better UX
+  // Pre-load frequently accessed data after login
   Future<void> _warmupUserCache(String userId) async {
     try {
       debugPrint('Warming up cache for user: $userId');
 
-      final futures = [
-        getUserProfile(userId),
-        _preloadUserPermissions(userId),
-        _preloadUserDashboard(userId),
-      ];
-
-      // Execute all cache warming operations concurrently
-      await Future.wait(futures, eagerError: false);
+      // Pre-load user profile
+      await getUserProfile(userId);
 
       debugPrint('Cache warmup completed for user: $userId');
     } catch (e) {
@@ -249,25 +230,7 @@ class AuthService with NetworkAwareService {
     }
   }
 
-  Future<void> _preloadUserPermissions(String userId) async {
-    try {
-      final callable = _functions.httpsCallable('getUserPermissions');
-      await callable.call({'userId': userId});
-    } catch (e) {
-      debugPrint('Permission preload failed: $e');
-    }
-  }
-
-  Future<void> _preloadUserDashboard(String userId) async {
-    try {
-      final callable = _functions.httpsCallable('getUserDashboard');
-      await callable.call({'userId': userId});
-    } catch (e) {
-      debugPrint('Dashboard preload failed: $e');
-    }
-  }
-
-  // Cached user profile retrieval with intelligent cache management
+  // Cached user profile retrieval
   Future<UserModel?> getUserProfile(String uid) async {
     // Check cache first
     if (_isUserCacheValid(uid)) {
@@ -312,53 +275,12 @@ class AuthService with NetworkAwareService {
     if (user == null) return false;
 
     try {
-      // Check if user is still active in database
       final profile = await getUserProfile(user.uid);
       return profile?.isActive ?? false;
     } catch (e) {
       debugPrint('Session validation failed: $e');
       return false;
     }
-  }
-
-  // Batch user operations for admin functionality
-  Future<List<UserModel>> getBatchUsers(List<String> userIds) async {
-    return executeOnlineOperation(
-      () async {
-        final users = <UserModel>[];
-        final uncachedIds = <String>[];
-
-        // Check cache first
-        for (final uid in userIds) {
-          if (_isUserCacheValid(uid)) {
-            users.add(_userCache[uid]!);
-          } else {
-            uncachedIds.add(uid);
-          }
-        }
-
-        // Fetch uncached users in batch
-        if (uncachedIds.isNotEmpty) {
-          final query = await _firestore
-              .collection(AppConstants.usersCollection)
-              .where(FieldPath.documentId, whereIn: uncachedIds)
-              .get();
-
-          for (final doc in query.docs) {
-            final user = UserModel.fromFirestore(doc);
-            users.add(user);
-
-            // Update cache
-            _userCache[user.id] = user;
-            _cacheTimestamps[user.id] = DateTime.now();
-          }
-        }
-
-        return users;
-      },
-      operationName: 'Batch User Fetch',
-      fallback: [],
-    );
   }
 
   // Cache management methods
@@ -385,14 +307,8 @@ class AuthService with NetworkAwareService {
   Map<String, dynamic> getAuthStats() {
     return {
       'cached_users': _userCache.length,
-      'cache_hit_ratio': _calculateCacheHitRatio(),
       'active_sessions': currentUser != null ? 1 : 0,
       'last_activity': DateTime.now().toIso8601String(),
     };
-  }
-
-  double _calculateCacheHitRatio() {
-    // This would need actual hit/miss tracking in production
-    return _userCache.isNotEmpty ? 0.85 : 0.0;
   }
 }

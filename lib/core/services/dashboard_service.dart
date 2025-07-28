@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import '../models/dashboard_model.dart';
 import '../models/user_model.dart';
@@ -9,7 +8,6 @@ import 'network_aware_service.dart';
 
 class DashboardService with NetworkAwareService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseFunctions _functions = FirebaseFunctions.instance;
   final PermissionService _permissionService = PermissionService();
 
   // Multi-level caching for optimal performance
@@ -37,19 +35,11 @@ class DashboardService with NetworkAwareService {
         debugPrint('Dashboard cache MISS: $userId - Fetching from network');
 
         try {
-          // Try Cloud Function first for optimal performance
-          final callable = _functions.httpsCallable('getUserDashboard');
-          final result = await callable.call({'userId': userId});
-
-          final dashboard =
-              DashboardConfig.fromJson(Map<String, dynamic>.from(result.data));
-
-          _cacheDashboard(cacheKey, dashboard);
-          return dashboard;
-        } catch (e) {
-          debugPrint('Cloud Function failed, using fallback: $e');
-          // Fallback to direct Firestore queries
+          // Direct Firestore queries (since we removed Cloud Functions)
           return await _fetchUserDashboardFallback(userId);
+        } catch (e) {
+          debugPrint('Dashboard fetch failed: $e');
+          return await _getDefaultDashboard(userId);
         }
       },
       operationName: 'Fetch User Dashboard',
@@ -107,7 +97,7 @@ class DashboardService with NetworkAwareService {
     try {
       // Use composite query for better performance
       final query = _firestore
-          .collection('dashboard_configs')
+          .collection(AppConstants.dashboardConfigsCollection)
           .where('organizationId', isEqualTo: user.organizationId)
           .where('isActive', isEqualTo: true);
 
@@ -118,8 +108,9 @@ class DashboardService with NetworkAwareService {
         final dashboard = DashboardConfig.fromFirestore(doc);
 
         // Check applicability in memory (faster than multiple queries)
-        final hasMatchingRole =
-            user.roles.any((role) => dashboard.applicableRoles.contains(role));
+        final hasMatchingRole = user.roles.any((role) =>
+            dashboard.applicableRoles.contains(role) ||
+            dashboard.applicableRoles.isEmpty);
 
         final hasMatchingUnit = user.departmentId != null &&
             dashboard.applicableUnits.contains(user.departmentId);
@@ -192,10 +183,6 @@ class DashboardService with NetworkAwareService {
 
         try {
           switch (config['dataSource']) {
-            case 'cloud_function':
-              data = await _executeCloudFunction(
-                  config['function'] ?? 'getWidgetData', userId, config);
-              break;
             case 'firestore_query':
               data = await _executeFirestoreQueryOptimized(
                   config['query'] ?? {}, userId);
@@ -227,19 +214,6 @@ class DashboardService with NetworkAwareService {
       operationName: 'Fetch Widget Data',
       fallback: _getOfflineWidgetData(widgetId, config),
     );
-  }
-
-  // Cloud Function execution for complex operations
-  Future<Map<String, dynamic>> _executeCloudFunction(
-      String functionName, String userId, Map<String, dynamic> config) async {
-    final callable = _functions.httpsCallable(functionName);
-    final result = await callable.call({
-      'userId': userId,
-      'config': config,
-      'timestamp': DateTime.now().millisecondsSinceEpoch,
-    });
-
-    return Map<String, dynamic>.from(result.data);
   }
 
   // Optimized Firestore queries with proper security and indexing
@@ -327,26 +301,8 @@ class DashboardService with NetworkAwareService {
     };
   }
 
-  // Enhanced aggregation with Cloud Functions
+  // Simple aggregation implementation
   Future<Map<String, dynamic>> _executeAggregationOptimized(
-      Map<String, dynamic> aggregationConfig, String userId) async {
-    try {
-      // Use Cloud Function for complex aggregations (better performance)
-      final callable = _functions.httpsCallable('executeAggregation');
-      final result = await callable.call({
-        'userId': userId,
-        'config': aggregationConfig,
-      });
-
-      return Map<String, dynamic>.from(result.data);
-    } catch (e) {
-      debugPrint('Cloud Function aggregation failed, using fallback: $e');
-      // Fallback to simple client-side aggregation
-      return await _executeSimpleAggregation(aggregationConfig, userId);
-    }
-  }
-
-  Future<Map<String, dynamic>> _executeSimpleAggregation(
       Map<String, dynamic> config, String userId) async {
     final collection = config['collection'] as String? ?? 'data';
     final operation = config['operation'] as String? ?? 'count';
@@ -495,8 +451,8 @@ class DashboardService with NetworkAwareService {
           type: 'chart',
           title: 'System Analytics',
           config: {
-            'dataSource': 'cloud_function',
-            'function': 'getSystemAnalytics'
+            'dataSource': 'aggregation',
+            'aggregation': {'collection': 'organizations', 'operation': 'count'}
           },
           requiredPermissions: ['admin_access'],
           position: GridPosition(x: 0, y: 3, width: 4, height: 2),
@@ -647,23 +603,5 @@ class DashboardService with NetworkAwareService {
               '%',
       'last_activity': DateTime.now().toIso8601String(),
     };
-  }
-
-  // Dashboard analytics for admin users
-  Future<Map<String, dynamic>> getDashboardAnalytics(String userId) async {
-    return executeOnlineOperation(
-      () async {
-        final callable = _functions.httpsCallable('getDashboardAnalytics');
-        final result = await callable.call({'userId': userId});
-        return Map<String, dynamic>.from(result.data);
-      },
-      operationName: 'Dashboard Analytics',
-      fallback: {
-        'views': 0,
-        'widgets_loaded': 0,
-        'last_access': DateTime.now().toIso8601String(),
-        'cache_stats': getDashboardStats(),
-      },
-    );
   }
 }

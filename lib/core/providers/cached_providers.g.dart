@@ -7,7 +7,7 @@ part of 'cached_providers.dart';
 // **************************************************************************
 
 String _$cachedUserPermissionsHash() =>
-    r'bbdd15ea5ca7f09312c8af3ff0e971a76458ac09';
+    r'1272b1c5646ee7e2b2f50c8f1f863a8c1e41c877';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -39,16 +39,24 @@ abstract class _$CachedUserPermissions
   );
 }
 
-/// See also [CachedUserPermissions].
+/// Cached user permissions with enhanced error handling
+///
+/// Copied from [CachedUserPermissions].
 @ProviderFor(CachedUserPermissions)
 const cachedUserPermissionsProvider = CachedUserPermissionsFamily();
 
-/// See also [CachedUserPermissions].
+/// Cached user permissions with enhanced error handling
+///
+/// Copied from [CachedUserPermissions].
 class CachedUserPermissionsFamily extends Family<AsyncValue<List<String>>> {
-  /// See also [CachedUserPermissions].
+  /// Cached user permissions with enhanced error handling
+  ///
+  /// Copied from [CachedUserPermissions].
   const CachedUserPermissionsFamily();
 
-  /// See also [CachedUserPermissions].
+  /// Cached user permissions with enhanced error handling
+  ///
+  /// Copied from [CachedUserPermissions].
   CachedUserPermissionsProvider call(
     String userId,
   ) {
@@ -81,11 +89,15 @@ class CachedUserPermissionsFamily extends Family<AsyncValue<List<String>>> {
   String? get name => r'cachedUserPermissionsProvider';
 }
 
-/// See also [CachedUserPermissions].
+/// Cached user permissions with enhanced error handling
+///
+/// Copied from [CachedUserPermissions].
 class CachedUserPermissionsProvider
     extends AutoDisposeAsyncNotifierProviderImpl<CachedUserPermissions,
         List<String>> {
-  /// See also [CachedUserPermissions].
+  /// Cached user permissions with enhanced error handling
+  ///
+  /// Copied from [CachedUserPermissions].
   CachedUserPermissionsProvider(
     String userId,
   ) : this._internal(
@@ -174,7 +186,164 @@ class _CachedUserPermissionsProviderElement
   String get userId => (origin as CachedUserPermissionsProvider).userId;
 }
 
-String _$cachedDashboardHash() => r'cd1cba64a2b39241b70fed6e4225d3c41cda1b6b';
+String _$cachedUserProfileHash() => r'c452734ef5de87cd109d7fe1cea7d11b42887051';
+
+abstract class _$CachedUserProfile
+    extends BuildlessAutoDisposeAsyncNotifier<UserProfile?> {
+  late final String userId;
+
+  FutureOr<UserProfile?> build(
+    String userId,
+  );
+}
+
+/// Cached user profile with organization context
+///
+/// Copied from [CachedUserProfile].
+@ProviderFor(CachedUserProfile)
+const cachedUserProfileProvider = CachedUserProfileFamily();
+
+/// Cached user profile with organization context
+///
+/// Copied from [CachedUserProfile].
+class CachedUserProfileFamily extends Family<AsyncValue<UserProfile?>> {
+  /// Cached user profile with organization context
+  ///
+  /// Copied from [CachedUserProfile].
+  const CachedUserProfileFamily();
+
+  /// Cached user profile with organization context
+  ///
+  /// Copied from [CachedUserProfile].
+  CachedUserProfileProvider call(
+    String userId,
+  ) {
+    return CachedUserProfileProvider(
+      userId,
+    );
+  }
+
+  @override
+  CachedUserProfileProvider getProviderOverride(
+    covariant CachedUserProfileProvider provider,
+  ) {
+    return call(
+      provider.userId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'cachedUserProfileProvider';
+}
+
+/// Cached user profile with organization context
+///
+/// Copied from [CachedUserProfile].
+class CachedUserProfileProvider extends AutoDisposeAsyncNotifierProviderImpl<
+    CachedUserProfile, UserProfile?> {
+  /// Cached user profile with organization context
+  ///
+  /// Copied from [CachedUserProfile].
+  CachedUserProfileProvider(
+    String userId,
+  ) : this._internal(
+          () => CachedUserProfile()..userId = userId,
+          from: cachedUserProfileProvider,
+          name: r'cachedUserProfileProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$cachedUserProfileHash,
+          dependencies: CachedUserProfileFamily._dependencies,
+          allTransitiveDependencies:
+              CachedUserProfileFamily._allTransitiveDependencies,
+          userId: userId,
+        );
+
+  CachedUserProfileProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.userId,
+  }) : super.internal();
+
+  final String userId;
+
+  @override
+  FutureOr<UserProfile?> runNotifierBuild(
+    covariant CachedUserProfile notifier,
+  ) {
+    return notifier.build(
+      userId,
+    );
+  }
+
+  @override
+  Override overrideWith(CachedUserProfile Function() create) {
+    return ProviderOverride(
+      origin: this,
+      override: CachedUserProfileProvider._internal(
+        () => create()..userId = userId,
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        userId: userId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeAsyncNotifierProviderElement<CachedUserProfile, UserProfile?>
+      createElement() {
+    return _CachedUserProfileProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CachedUserProfileProvider && other.userId == userId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, userId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin CachedUserProfileRef
+    on AutoDisposeAsyncNotifierProviderRef<UserProfile?> {
+  /// The parameter `userId` of this provider.
+  String get userId;
+}
+
+class _CachedUserProfileProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<CachedUserProfile,
+        UserProfile?> with CachedUserProfileRef {
+  _CachedUserProfileProviderElement(super.provider);
+
+  @override
+  String get userId => (origin as CachedUserProfileProvider).userId;
+}
+
+String _$cachedDashboardHash() => r'0b4a12fb30c3d6e4f28b606c729ae32d171dcd7d';
 
 abstract class _$CachedDashboard
     extends BuildlessAutoDisposeAsyncNotifier<DashboardConfig?> {
@@ -185,16 +354,24 @@ abstract class _$CachedDashboard
   );
 }
 
-/// See also [CachedDashboard].
+/// Enhanced cached dashboard with organization context
+///
+/// Copied from [CachedDashboard].
 @ProviderFor(CachedDashboard)
 const cachedDashboardProvider = CachedDashboardFamily();
 
-/// See also [CachedDashboard].
+/// Enhanced cached dashboard with organization context
+///
+/// Copied from [CachedDashboard].
 class CachedDashboardFamily extends Family<AsyncValue<DashboardConfig?>> {
-  /// See also [CachedDashboard].
+  /// Enhanced cached dashboard with organization context
+  ///
+  /// Copied from [CachedDashboard].
   const CachedDashboardFamily();
 
-  /// See also [CachedDashboard].
+  /// Enhanced cached dashboard with organization context
+  ///
+  /// Copied from [CachedDashboard].
   CachedDashboardProvider call(
     String userId,
   ) {
@@ -227,10 +404,14 @@ class CachedDashboardFamily extends Family<AsyncValue<DashboardConfig?>> {
   String? get name => r'cachedDashboardProvider';
 }
 
-/// See also [CachedDashboard].
+/// Enhanced cached dashboard with organization context
+///
+/// Copied from [CachedDashboard].
 class CachedDashboardProvider extends AutoDisposeAsyncNotifierProviderImpl<
     CachedDashboard, DashboardConfig?> {
-  /// See also [CachedDashboard].
+  /// Enhanced cached dashboard with organization context
+  ///
+  /// Copied from [CachedDashboard].
   CachedDashboardProvider(
     String userId,
   ) : this._internal(
@@ -319,7 +500,7 @@ class _CachedDashboardProviderElement
   String get userId => (origin as CachedDashboardProvider).userId;
 }
 
-String _$cachedWidgetDataHash() => r'b587ba81f4bdccd72ecb4b8f1fe6d8cbfb4e7633';
+String _$cachedWidgetDataHash() => r'7d5ef624e58250007702c05bab977e7317c99c40';
 
 abstract class _$CachedWidgetData
     extends BuildlessAutoDisposeAsyncNotifier<Map<String, dynamic>> {
@@ -332,16 +513,24 @@ abstract class _$CachedWidgetData
   );
 }
 
-/// See also [CachedWidgetData].
+/// Cached widget data with enhanced error handling
+///
+/// Copied from [CachedWidgetData].
 @ProviderFor(CachedWidgetData)
 const cachedWidgetDataProvider = CachedWidgetDataFamily();
 
-/// See also [CachedWidgetData].
+/// Cached widget data with enhanced error handling
+///
+/// Copied from [CachedWidgetData].
 class CachedWidgetDataFamily extends Family<AsyncValue<Map<String, dynamic>>> {
-  /// See also [CachedWidgetData].
+  /// Cached widget data with enhanced error handling
+  ///
+  /// Copied from [CachedWidgetData].
   const CachedWidgetDataFamily();
 
-  /// See also [CachedWidgetData].
+  /// Cached widget data with enhanced error handling
+  ///
+  /// Copied from [CachedWidgetData].
   CachedWidgetDataProvider call(
     String widgetId,
     String userId,
@@ -377,10 +566,14 @@ class CachedWidgetDataFamily extends Family<AsyncValue<Map<String, dynamic>>> {
   String? get name => r'cachedWidgetDataProvider';
 }
 
-/// See also [CachedWidgetData].
+/// Cached widget data with enhanced error handling
+///
+/// Copied from [CachedWidgetData].
 class CachedWidgetDataProvider extends AutoDisposeAsyncNotifierProviderImpl<
     CachedWidgetData, Map<String, dynamic>> {
-  /// See also [CachedWidgetData].
+  /// Cached widget data with enhanced error handling
+  ///
+  /// Copied from [CachedWidgetData].
   CachedWidgetDataProvider(
     String widgetId,
     String userId,
@@ -487,9 +680,192 @@ class _CachedWidgetDataProviderElement
   String get userId => (origin as CachedWidgetDataProvider).userId;
 }
 
-String _$cacheManagerHash() => r'72945464e6efb8527db6d4faef19be6053e8b688';
+String _$cachedDynamicModelsHash() =>
+    r'88dac01846dc2e862838536a943a222063a61a92';
 
-/// See also [CacheManager].
+/// Cached dynamic models for the application
+///
+/// Copied from [CachedDynamicModels].
+@ProviderFor(CachedDynamicModels)
+final cachedDynamicModelsProvider = AutoDisposeAsyncNotifierProvider<
+    CachedDynamicModels, List<DynamicModel>>.internal(
+  CachedDynamicModels.new,
+  name: r'cachedDynamicModelsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$cachedDynamicModelsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$CachedDynamicModels = AutoDisposeAsyncNotifier<List<DynamicModel>>;
+String _$cachedOrgDynamicModelsHash() =>
+    r'9fd900d31942cdeb95d22d1270172308bab8d6af';
+
+abstract class _$CachedOrgDynamicModels
+    extends BuildlessAutoDisposeAsyncNotifier<List<DynamicModel>> {
+  late final String organizationId;
+
+  FutureOr<List<DynamicModel>> build(
+    String organizationId,
+  );
+}
+
+/// Cached organization-specific dynamic models
+///
+/// Copied from [CachedOrgDynamicModels].
+@ProviderFor(CachedOrgDynamicModels)
+const cachedOrgDynamicModelsProvider = CachedOrgDynamicModelsFamily();
+
+/// Cached organization-specific dynamic models
+///
+/// Copied from [CachedOrgDynamicModels].
+class CachedOrgDynamicModelsFamily
+    extends Family<AsyncValue<List<DynamicModel>>> {
+  /// Cached organization-specific dynamic models
+  ///
+  /// Copied from [CachedOrgDynamicModels].
+  const CachedOrgDynamicModelsFamily();
+
+  /// Cached organization-specific dynamic models
+  ///
+  /// Copied from [CachedOrgDynamicModels].
+  CachedOrgDynamicModelsProvider call(
+    String organizationId,
+  ) {
+    return CachedOrgDynamicModelsProvider(
+      organizationId,
+    );
+  }
+
+  @override
+  CachedOrgDynamicModelsProvider getProviderOverride(
+    covariant CachedOrgDynamicModelsProvider provider,
+  ) {
+    return call(
+      provider.organizationId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'cachedOrgDynamicModelsProvider';
+}
+
+/// Cached organization-specific dynamic models
+///
+/// Copied from [CachedOrgDynamicModels].
+class CachedOrgDynamicModelsProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<CachedOrgDynamicModels,
+        List<DynamicModel>> {
+  /// Cached organization-specific dynamic models
+  ///
+  /// Copied from [CachedOrgDynamicModels].
+  CachedOrgDynamicModelsProvider(
+    String organizationId,
+  ) : this._internal(
+          () => CachedOrgDynamicModels()..organizationId = organizationId,
+          from: cachedOrgDynamicModelsProvider,
+          name: r'cachedOrgDynamicModelsProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$cachedOrgDynamicModelsHash,
+          dependencies: CachedOrgDynamicModelsFamily._dependencies,
+          allTransitiveDependencies:
+              CachedOrgDynamicModelsFamily._allTransitiveDependencies,
+          organizationId: organizationId,
+        );
+
+  CachedOrgDynamicModelsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.organizationId,
+  }) : super.internal();
+
+  final String organizationId;
+
+  @override
+  FutureOr<List<DynamicModel>> runNotifierBuild(
+    covariant CachedOrgDynamicModels notifier,
+  ) {
+    return notifier.build(
+      organizationId,
+    );
+  }
+
+  @override
+  Override overrideWith(CachedOrgDynamicModels Function() create) {
+    return ProviderOverride(
+      origin: this,
+      override: CachedOrgDynamicModelsProvider._internal(
+        () => create()..organizationId = organizationId,
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        organizationId: organizationId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeAsyncNotifierProviderElement<CachedOrgDynamicModels,
+      List<DynamicModel>> createElement() {
+    return _CachedOrgDynamicModelsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CachedOrgDynamicModelsProvider &&
+        other.organizationId == organizationId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, organizationId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin CachedOrgDynamicModelsRef
+    on AutoDisposeAsyncNotifierProviderRef<List<DynamicModel>> {
+  /// The parameter `organizationId` of this provider.
+  String get organizationId;
+}
+
+class _CachedOrgDynamicModelsProviderElement
+    extends AutoDisposeAsyncNotifierProviderElement<CachedOrgDynamicModels,
+        List<DynamicModel>> with CachedOrgDynamicModelsRef {
+  _CachedOrgDynamicModelsProviderElement(super.provider);
+
+  @override
+  String get organizationId =>
+      (origin as CachedOrgDynamicModelsProvider).organizationId;
+}
+
+String _$cacheManagerHash() => r'c1a274626d20f5e01a77a0a8a41037478fa992fe';
+
+/// Enhanced cache manager with comprehensive functionality
+///
+/// Copied from [CacheManager].
 @ProviderFor(CacheManager)
 final cacheManagerProvider =
     AutoDisposeAsyncNotifierProvider<CacheManager, void>.internal(
@@ -502,5 +878,24 @@ final cacheManagerProvider =
 );
 
 typedef _$CacheManager = AutoDisposeAsyncNotifier<void>;
+String _$cacheRefreshSchedulerHash() =>
+    r'3be6eebafdee62486fa58ca58f437078e5a43ceb';
+
+/// Automated cache refresh scheduler
+///
+/// Copied from [CacheRefreshScheduler].
+@ProviderFor(CacheRefreshScheduler)
+final cacheRefreshSchedulerProvider =
+    AutoDisposeAsyncNotifierProvider<CacheRefreshScheduler, void>.internal(
+  CacheRefreshScheduler.new,
+  name: r'cacheRefreshSchedulerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$cacheRefreshSchedulerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$CacheRefreshScheduler = AutoDisposeAsyncNotifier<void>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
