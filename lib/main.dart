@@ -1,41 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:google_fonts/google_fonts.dart';
-
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/services/connectivity_service.dart';
+import 'core/services/enhanced_isar_service.dart';
+import 'features/dashboard/widgets/connectivity_wrapper.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(
-    const ProviderScope(
-      child: ElectriAdminApp(),
-    ),
-  );
+  // Initialize connectivity service
+  await ConnectivityService().initialize();
+
+  // Initialize Isar cache
+  await EnhancedIsarService.initialize();
+
+  runApp(const ProviderScope(child: SubstationManagerApp()));
 }
 
-class ElectriAdminApp extends StatelessWidget {
-  const ElectriAdminApp({Key? key}) : super(key: key);
+class SubstationManagerApp extends ConsumerWidget {
+  const SubstationManagerApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
     return MaterialApp.router(
-      title: 'ElectriAdmin - Substation Management',
-      theme: ThemeData(
-        useMaterial3: true,
-        textTheme: GoogleFonts.interTextTheme(),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF3B82F6),
-          brightness: Brightness.light,
-        ),
-      ),
+      title: 'Substation Manager Pro',
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      routerConfig: router,
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return ConnectivityWrapper(
+          child: child ?? const SizedBox(),
+        );
+      },
     );
   }
 }
