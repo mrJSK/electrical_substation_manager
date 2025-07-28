@@ -4,8 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'firebase_options.dart';
-import 'services/location_service.dart';
-import 'web/router/web_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,9 +12,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
-  // Load states/cities JSON for the organization builder
-  await LocationService.initializeLocationData();
 
   runApp(
     const ProviderScope(
@@ -40,7 +35,6 @@ class ElectriAdminApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      routerConfig: webRouter,
       debugShowCheckedModeBanner: false,
     );
   }
