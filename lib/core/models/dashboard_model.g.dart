@@ -69,6 +69,7 @@ _$DashboardWidgetImpl _$$DashboardWidgetImplFromJson(
       isResizable: json['isResizable'] as bool? ?? false,
       styling: json['styling'] as Map<String, dynamic>? ?? const {},
       refreshInterval: (json['refreshInterval'] as num?)?.toInt() ?? 15,
+      priority: json['priority'] as String? ?? 'medium',
       lastUpdated: const TimestampConverter().fromJson(json['lastUpdated']),
     );
 
@@ -87,6 +88,7 @@ Map<String, dynamic> _$$DashboardWidgetImplToJson(
       'isResizable': instance.isResizable,
       'styling': instance.styling,
       'refreshInterval': instance.refreshInterval,
+      'priority': instance.priority,
       'lastUpdated': const TimestampConverter().toJson(instance.lastUpdated),
     };
 

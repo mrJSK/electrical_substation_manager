@@ -6,7 +6,7 @@ part of 'enhanced_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userPermissionsHash() => r'85afc4245fd10454839919af8f1db9cf01503ae4';
+String _$userPermissionsHash() => r'0f36b862a420528ea26acb9bf7ed8f1f124071c2';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -183,13 +183,13 @@ class _UserPermissionsProviderElement
   String get userId => (origin as UserPermissionsProvider).userId;
 }
 
-String _$userProfileDataHash() => r'4438824addcef26b315dd059080b8766c7341e68';
+String _$userProfileDataHash() => r'99b04df4cbadfc797934965f980cbc2cee3c104a';
 
 abstract class _$UserProfileData
-    extends BuildlessAutoDisposeAsyncNotifier<UserProfile?> {
+    extends BuildlessAutoDisposeAsyncNotifier<UserModel?> {
   late final String userId;
 
-  FutureOr<UserProfile?> build(
+  FutureOr<UserModel?> build(
     String userId,
   );
 }
@@ -203,7 +203,7 @@ const userProfileDataProvider = UserProfileDataFamily();
 /// Enhanced user profile with organization context
 ///
 /// Copied from [UserProfileData].
-class UserProfileDataFamily extends Family<AsyncValue<UserProfile?>> {
+class UserProfileDataFamily extends Family<AsyncValue<UserModel?>> {
   /// Enhanced user profile with organization context
   ///
   /// Copied from [UserProfileData].
@@ -247,8 +247,8 @@ class UserProfileDataFamily extends Family<AsyncValue<UserProfile?>> {
 /// Enhanced user profile with organization context
 ///
 /// Copied from [UserProfileData].
-class UserProfileDataProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    UserProfileData, UserProfile?> {
+class UserProfileDataProvider
+    extends AutoDisposeAsyncNotifierProviderImpl<UserProfileData, UserModel?> {
   /// Enhanced user profile with organization context
   ///
   /// Copied from [UserProfileData].
@@ -281,7 +281,7 @@ class UserProfileDataProvider extends AutoDisposeAsyncNotifierProviderImpl<
   final String userId;
 
   @override
-  FutureOr<UserProfile?> runNotifierBuild(
+  FutureOr<UserModel?> runNotifierBuild(
     covariant UserProfileData notifier,
   ) {
     return notifier.build(
@@ -306,7 +306,7 @@ class UserProfileDataProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<UserProfileData, UserProfile?>
+  AutoDisposeAsyncNotifierProviderElement<UserProfileData, UserModel?>
       createElement() {
     return _UserProfileDataProviderElement(this);
   }
@@ -325,14 +325,14 @@ class UserProfileDataProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 }
 
-mixin UserProfileDataRef on AutoDisposeAsyncNotifierProviderRef<UserProfile?> {
+mixin UserProfileDataRef on AutoDisposeAsyncNotifierProviderRef<UserModel?> {
   /// The parameter `userId` of this provider.
   String get userId;
 }
 
 class _UserProfileDataProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<UserProfileData,
-        UserProfile?> with UserProfileDataRef {
+    extends AutoDisposeAsyncNotifierProviderElement<UserProfileData, UserModel?>
+    with UserProfileDataRef {
   _UserProfileDataProviderElement(super.provider);
 
   @override
@@ -496,7 +496,7 @@ class _DashboardDataProviderElement
   String get userId => (origin as DashboardDataProvider).userId;
 }
 
-String _$widgetDataCacheHash() => r'1d50a67d4377b99ce97102bc6fdbfeab19231d8b';
+String _$widgetDataCacheHash() => r'4215dd7ec608ea0ba85b1ede2a41f894e3eacde3';
 
 abstract class _$WidgetDataCache
     extends BuildlessAutoDisposeAsyncNotifier<Map<String, dynamic>> {
@@ -1017,7 +1017,7 @@ class _DynamicModelByNameProviderElement
       (origin as DynamicModelByNameProvider).organizationId;
 }
 
-String _$systemHealthHash() => r'300e82adfa6dd0846b0f6960fed802b15856d07a';
+String _$systemHealthHash() => r'2f0362a29e66cb0c464ce55ed00ca7885edf2f9c';
 
 /// System health monitoring provider
 ///

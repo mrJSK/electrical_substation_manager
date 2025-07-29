@@ -14,7 +14,6 @@ import 'cached_providers.dart'; // Using your existing cached providers
 /// Provider for all active dynamic models with caching
 final dynamicModelsProvider =
     FutureProvider.autoDispose<List<DynamicModel>>((ref) async {
-  final cacheManager = ref.watch(cacheManagerProvider.notifier);
   final connectivity = ref.watch(connectivityServiceProvider);
 
   try {
@@ -36,7 +35,10 @@ final dynamicModelsProvider =
 
     // Cache the results using Enhanced Isar Service
     await EnhancedIsarService.cacheDynamicModels(
-        models, const Duration(hours: 2));
+      'dynamic_models', // cache key
+      models,
+      const Duration(hours: 2),
+    );
 
     return models;
   } catch (e) {
@@ -45,7 +47,6 @@ final dynamicModelsProvider =
     if (cachedModels != null && cachedModels.isNotEmpty) {
       return cachedModels;
     }
-
     throw Exception('Failed to load dynamic models: $e');
   }
 });
@@ -77,7 +78,10 @@ final dynamicModelsByOrgProvider =
 
       // Cache the results using Enhanced Isar Service
       await EnhancedIsarService.cacheOrgModels(
-          organizationId, models, const Duration(minutes: 30));
+        organizationId,
+        models,
+        const Duration(minutes: 30),
+      );
 
       return models;
     } catch (e) {
@@ -87,7 +91,6 @@ final dynamicModelsByOrgProvider =
       if (cachedModels != null) {
         return cachedModels;
       }
-
       throw Exception(
           'Failed to load models for organization $organizationId: $e');
     }
@@ -101,7 +104,7 @@ final dynamicModelByNameProvider = FutureProvider.family
     try {
       final organizationId = params.organizationId ??
           ref.watch(currentUserProvider).when(
-                data: (user) => user?.uid, // Fallback to user ID as org ID
+                data: (user) => user?.uid,
                 loading: () => null,
                 error: (_, __) => null,
               );
@@ -120,7 +123,7 @@ final dynamicModelByNameProvider = FutureProvider.family
           orElse: () => throw StateError('Model not found'),
         );
       }
-    } catch (e) {
+    } catch (_) {
       return null; // Model not found
     }
   },
@@ -149,7 +152,10 @@ final dynamicModelByIdProvider =
 
       // Cache the result using Enhanced Isar Service
       await EnhancedIsarService.cacheModelById(
-          modelId, model, const Duration(hours: 1));
+        modelId,
+        model,
+        const Duration(hours: 1),
+      );
 
       return model;
     } catch (e) {
@@ -159,50 +165,106 @@ final dynamicModelByIdProvider =
 );
 
 // =============================================================================
-// SPECIALIZED PROVIDERS FOR ELECTRICAL INDUSTRY
+// BACKGROUND REFRESH HELPERS
 // =============================================================================
 
-/// Provider for equipment-related models
+void _refreshModelsInBackground(AutoDisposeRef ref) {
+  Future.microtask(() async {
+    try {
+      final freshModels = await _fetchModelsFromFirestore();
+      await EnhancedIsarService.cacheDynamicModels(
+        'dynamic_models',
+        freshModels,
+        const Duration(hours: 2),
+      );
+    } catch (_) {
+      // Silent fail
+    }
+  });
+}
+
+void _refreshOrgModelsInBackground(AutoDisposeRef ref, String organizationId) {
+  Future.microtask(() async {
+    try {
+      final freshModels = await _fetchModelsByOrganization(organizationId);
+      await EnhancedIsarService.cacheOrgModels(
+        organizationId,
+        freshModels,
+        const Duration(minutes: 30),
+      );
+    } catch (_) {
+      // Silent fail
+    }
+  });
+}
+
+// =============================================================================
+// HELPER FUNCTIONS TO FETCH MODELS FROM FIRESTORE
+// =============================================================================
+
+Future<List<DynamicModel>> _fetchModelsFromFirestore() async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection(AppConstants.dynamicModelsCollection)
+      .where('isActive', isEqualTo: true)
+      .orderBy('updatedAt', descending: true)
+      .get();
+
+  return snapshot.docs.map((doc) => DynamicModel.fromFirestore(doc)).toList();
+}
+
+Future<List<DynamicModel>> _fetchModelsByOrganization(
+    String organizationId) async {
+  final snapshot = await FirebaseFirestore.instance
+      .collection(AppConstants.dynamicModelsCollection)
+      .where('organizationId', isEqualTo: organizationId)
+      .where('isActive', isEqualTo: true)
+      .orderBy('updatedAt', descending: true)
+      .get();
+
+  return snapshot.docs.map((doc) => DynamicModel.fromFirestore(doc)).toList();
+}
+
+// =============================================================================
+// MODEL SPECIALIZATION PROVIDERS
+// =============================================================================
+
 final equipmentModelsProvider =
     FutureProvider.autoDispose<List<DynamicModel>>((ref) async {
   final allModels = await ref.watch(dynamicModelsProvider.future);
   return allModels
       .where((model) =>
           model.category?.toLowerCase() == 'equipment' ||
-          model.modelName.contains('equipment'))
+          model.modelName.toLowerCase().contains('equipment'))
       .toList();
 });
 
-/// Provider for maintenance-related models
 final maintenanceModelsProvider =
     FutureProvider.autoDispose<List<DynamicModel>>((ref) async {
   final allModels = await ref.watch(dynamicModelsProvider.future);
   return allModels
       .where((model) =>
           model.category?.toLowerCase() == 'maintenance' ||
-          model.modelName.contains('maintenance'))
+          model.modelName.toLowerCase().contains('maintenance'))
       .toList();
 });
 
-/// Provider for inspection-related models
 final inspectionModelsProvider =
     FutureProvider.autoDispose<List<DynamicModel>>((ref) async {
   final allModels = await ref.watch(dynamicModelsProvider.future);
   return allModels
       .where((model) =>
           model.category?.toLowerCase() == 'inspection' ||
-          model.modelName.contains('inspection'))
+          model.modelName.toLowerCase().contains('inspection'))
       .toList();
 });
 
-/// Provider for report-related models
 final reportModelsProvider =
     FutureProvider.autoDispose<List<DynamicModel>>((ref) async {
   final allModels = await ref.watch(dynamicModelsProvider.future);
   return allModels
       .where((model) =>
           model.category?.toLowerCase() == 'report' ||
-          model.modelName.contains('report'))
+          model.modelName.toLowerCase().contains('report'))
       .toList();
 });
 
@@ -210,7 +272,6 @@ final reportModelsProvider =
 // MODEL STATISTICS AND ANALYTICS PROVIDERS
 // =============================================================================
 
-/// Provider for model statistics
 final modelStatisticsProvider =
     FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final allModels = await ref.watch(dynamicModelsProvider.future);
@@ -227,7 +288,6 @@ final modelStatisticsProvider =
     'modelsWithPermissions': 0,
   };
 
-  // Category breakdown
   final categories = <String, int>{};
   int totalFields = 0;
   int modelsWithValidation = 0;
@@ -258,12 +318,10 @@ final modelStatisticsProvider =
   return stats;
 });
 
-/// Provider for model usage analytics
 final modelUsageAnalyticsProvider =
     FutureProvider.family.autoDispose<Map<String, dynamic>, String>(
   (ref, organizationId) async {
     try {
-      // This would typically come from your analytics service
       final models =
           await ref.watch(dynamicModelsByOrgProvider(organizationId).future);
 
@@ -272,24 +330,21 @@ final modelUsageAnalyticsProvider =
         'mostUsedModels': <String>[],
         'recentlyCreated': <String>[],
         'fieldTypeDistribution': <String, int>{},
-        'validationComplexity': <String, int>{},
+        'validationComplexity': <String, int>{
+          'simple': 0,
+          'moderate': 0,
+          'complex': 0,
+        },
       };
 
-      // Calculate field type distribution
       final fieldTypes = <String, int>{};
-      final validationComplexity = <String, int>{
-        'simple': 0,
-        'moderate': 0,
-        'complex': 0
-      };
+      final validationComplexity = analytics['validationComplexity']!;
 
       for (final model in models) {
-        // Count field types
         for (final field in model.fields.values) {
           fieldTypes[field.fieldType] = (fieldTypes[field.fieldType] ?? 0) + 1;
         }
 
-        // Assess validation complexity
         final validationScore = _calculateValidationComplexity(model);
         if (validationScore < 3) {
           validationComplexity['simple'] = validationComplexity['simple']! + 1;
@@ -319,11 +374,25 @@ final modelUsageAnalyticsProvider =
 // REAL-TIME PROVIDERS WITH FIRESTORE STREAMS
 // =============================================================================
 
-/// Stream provider for real-time model updates
 final dynamicModelsStreamProvider =
     StreamProvider.autoDispose<List<DynamicModel>>((ref) {
   return FirebaseFirestore.instance
       .collection(AppConstants.dynamicModelsCollection)
+      .where('isActive', isEqualTo: true)
+      .orderBy('updatedAt', descending: true)
+      .snapshots()
+      .map((snapshot) =>
+          snapshot.docs.map((doc) => DynamicModel.fromFirestore(doc)).toList())
+      .handleError((error) {
+    throw Exception('Failed to stream dynamic models: $error');
+  });
+});
+
+final orgModelsStreamProvider = StreamProvider.family
+    .autoDispose<List<DynamicModel>, String>((ref, organizationId) {
+  return FirebaseFirestore.instance
+      .collection(AppConstants.dynamicModelsCollection)
+      .where('organizationId', isEqualTo: organizationId)
       .where('isActive', isEqualTo: true)
       .orderBy('updatedAt', descending: true)
       .snapshots()
@@ -332,211 +401,43 @@ final dynamicModelsStreamProvider =
         snapshot.docs.map((doc) => DynamicModel.fromFirestore(doc)).toList();
 
     // Update cache when we get new stream data
-    EnhancedIsarService.cacheDynamicModels(models, const Duration(hours: 2));
+    EnhancedIsarService.cacheOrgModels(
+      organizationId,
+      models,
+      const Duration(minutes: 30),
+    );
 
     return models;
   }).handleError((error) {
-    throw Exception('Failed to stream dynamic models: $error');
+    throw Exception('Failed to stream org models: $error');
   });
-});
-
-/// Stream provider for organization-specific models
-final orgModelsStreamProvider =
-    StreamProvider.family.autoDispose<List<DynamicModel>, String>(
-  (ref, organizationId) {
-    return FirebaseFirestore.instance
-        .collection(AppConstants.dynamicModelsCollection)
-        .where('organizationId', isEqualTo: organizationId)
-        .where('isActive', isEqualTo: true)
-        .orderBy('updatedAt', descending: true)
-        .snapshots()
-        .map((snapshot) {
-      final models =
-          snapshot.docs.map((doc) => DynamicModel.fromFirestore(doc)).toList();
-
-      // Update cache when we get new stream data
-      EnhancedIsarService.cacheOrgModels(
-          organizationId, models, const Duration(minutes: 30));
-
-      return models;
-    }).handleError((error) {
-      throw Exception('Failed to stream org models: $error');
-    });
-  },
-);
-
-// =============================================================================
-// MODEL SEARCH AND FILTERING PROVIDERS
-// =============================================================================
-
-/// Provider for searching models
-final modelSearchProvider = FutureProvider.family
-    .autoDispose<List<DynamicModel>, ({String query, String? organizationId})>(
-  (ref, params) async {
-    final models = params.organizationId != null
-        ? await ref
-            .watch(dynamicModelsByOrgProvider(params.organizationId!).future)
-        : await ref.watch(dynamicModelsProvider.future);
-
-    if (params.query.isEmpty) return models;
-
-    final query = params.query.toLowerCase();
-    return models.where((model) {
-      return model.modelName.toLowerCase().contains(query) ||
-          model.displayName.toLowerCase().contains(query) ||
-          (model.description?.toLowerCase().contains(query) ?? false) ||
-          (model.category?.toLowerCase().contains(query) ?? false);
-    }).toList();
-  },
-);
-
-/// Provider for filtering models by category
-final modelsByCategoryProvider = FutureProvider.family.autoDispose<
-    List<DynamicModel>, ({String category, String? organizationId})>(
-  (ref, params) async {
-    final models = params.organizationId != null
-        ? await ref
-            .watch(dynamicModelsByOrgProvider(params.organizationId!).future)
-        : await ref.watch(dynamicModelsProvider.future);
-
-    return models
-        .where((model) =>
-            model.category?.toLowerCase() == params.category.toLowerCase())
-        .toList();
-  },
-);
-
-// =============================================================================
-// MODEL VALIDATION AND HEALTH CHECK PROVIDERS
-// =============================================================================
-
-/// Provider for model validation health check
-final modelHealthCheckProvider =
-    FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-  final models = await ref.watch(dynamicModelsProvider.future);
-
-  final healthCheck = <String, dynamic>{
-    'totalModels': models.length,
-    'healthyModels': 0,
-    'modelsWithIssues': 0,
-    'issues': <Map<String, dynamic>>[],
-  };
-
-  int healthyModels = 0;
-  final issues = <Map<String, dynamic>>[];
-
-  for (final model in models) {
-    final modelIssues = _validateModelHealth(model);
-    if (modelIssues.isEmpty) {
-      healthyModels++;
-    } else {
-      issues.addAll(modelIssues.map((issue) => {
-            'modelId': model.id,
-            'modelName': model.modelName,
-            'issue': issue,
-            'severity': _getIssueSeverity(issue),
-          }));
-    }
-  }
-
-  healthCheck['healthyModels'] = healthyModels;
-  healthCheck['modelsWithIssues'] = models.length - healthyModels;
-  healthCheck['issues'] = issues;
-
-  return healthCheck;
 });
 
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
 
-/// Fetch models from Firestore with error handling
-Future<List<DynamicModel>> _fetchModelsFromFirestore() async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection(AppConstants.dynamicModelsCollection)
-      .where('isActive', isEqualTo: true)
-      .orderBy('updatedAt', descending: true)
-      .get();
-
-  return snapshot.docs.map((doc) => DynamicModel.fromFirestore(doc)).toList();
-}
-
-/// Fetch models by organization from Firestore
-Future<List<DynamicModel>> _fetchModelsByOrganization(
-    String organizationId) async {
-  final snapshot = await FirebaseFirestore.instance
-      .collection(AppConstants.dynamicModelsCollection)
-      .where('organizationId', isEqualTo: organizationId)
-      .where('isActive', isEqualTo: true)
-      .orderBy('updatedAt', descending: true)
-      .get();
-
-  return snapshot.docs.map((doc) => DynamicModel.fromFirestore(doc)).toList();
-}
-
-/// Refresh models in background for better UX
-void _refreshModelsInBackground(AutoDisposeRef ref) {
-  Future.microtask(() async {
-    try {
-      final freshModels = await _fetchModelsFromFirestore();
-      await EnhancedIsarService.cacheDynamicModels(
-          freshModels, const Duration(hours: 2));
-    } catch (e) {
-      // Silent fail - user already has cached data
-    }
-  });
-}
-
-/// Refresh organization models in background
-void _refreshOrgModelsInBackground(AutoDisposeRef ref, String organizationId) {
-  Future.microtask(() async {
-    try {
-      final freshModels = await _fetchModelsByOrganization(organizationId);
-      await EnhancedIsarService.cacheOrgModels(
-          organizationId, freshModels, const Duration(minutes: 30));
-    } catch (e) {
-      // Silent fail - user already has cached data
-    }
-  });
-}
-
-/// Calculate validation complexity score for a model
 int _calculateValidationComplexity(DynamicModel model) {
-  int score = 0;
-
-  // Count required fields
-  score += model.requiredFields.length;
-
-  // Count fields with validation rules
-  score +=
-      model.fields.values.where((f) => f.validationRules.isNotEmpty).length;
-
-  // Count relationships
-  score += model.relationships.length;
-
-  // Count global validation rules
-  score += model.validationRules.length;
-
+  int score = model.requiredFields.length +
+      model.fields.values.where((f) => f.validationRules.isNotEmpty).length +
+      model.relationships.length +
+      model.validationRules.length;
   return score;
 }
 
-/// Validate model health and return issues
 List<String> _validateModelHealth(DynamicModel model) {
   final issues = <String>[];
 
-  // Check for empty fields
   if (model.fields.isEmpty) {
     issues.add('Model has no fields defined');
   }
 
-  // Check for missing display names
   for (final field in model.fields.values) {
     if (field.displayName.trim().isEmpty) {
       issues.add('Field ${field.fieldName} has no display name');
     }
   }
 
-  // Check for unreferenced required fields
   for (final requiredField in model.requiredFields) {
     if (!model.fields.containsKey(requiredField)) {
       issues
@@ -544,14 +445,12 @@ List<String> _validateModelHealth(DynamicModel model) {
     }
   }
 
-  // Check for selection fields without options
   for (final field in model.fields.values) {
     if (field.isSelectionField && !field.hasOptions) {
       issues.add('Selection field ${field.fieldName} has no options defined');
     }
   }
 
-  // Check for reference fields without reference model
   for (final field in model.fields.values) {
     if (field.isReferenceField && (field.referenceModel?.isEmpty ?? true)) {
       issues.add(
@@ -562,7 +461,6 @@ List<String> _validateModelHealth(DynamicModel model) {
   return issues;
 }
 
-/// Get issue severity level
 String _getIssueSeverity(String issue) {
   if (issue.contains('no fields defined') || issue.contains('not found')) {
     return 'high';

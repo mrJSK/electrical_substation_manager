@@ -1,3 +1,4 @@
+// lib/core/models/dashboard_model.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'user_model.dart';
@@ -69,6 +70,7 @@ class DashboardWidget with _$DashboardWidget {
     @Default(false) bool isResizable,
     @Default({}) Map<String, dynamic> styling,
     @Default(15) int refreshInterval, // minutes
+    @Default('medium') String priority, // Added priority field
     @TimestampConverter() DateTime? lastUpdated,
   }) = _DashboardWidget;
 

@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/dynamic_model.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/models/field_config.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
+
+import '../../dashboard/widgets/online_operation_guard.dart';
 
 class DynamicFormBuilder extends ConsumerStatefulWidget {
   final DynamicModel model;
@@ -511,7 +514,8 @@ class _DynamicFormBuilderState extends ConsumerState<DynamicFormBuilder>
         prefixIcon: const Icon(Icons.calendar_today_outlined),
       ),
       inputType: InputType.date,
-      validator: FormBuilderValidators.compose(validators),
+      validator: FormBuilderValidators.compose(
+          validators.cast<FormFieldValidator<DateTime>>()),
       enabled: !widget.readOnly,
       firstDate: field.minDate,
       lastDate: field.maxDate,
@@ -527,7 +531,8 @@ class _DynamicFormBuilderState extends ConsumerState<DynamicFormBuilder>
         prefixIcon: const Icon(Icons.event_outlined),
       ),
       inputType: InputType.both,
-      validator: FormBuilderValidators.compose(validators),
+      validator: FormBuilderValidators.compose(
+          validators.cast<FormFieldValidator<DateTime>>()),
       enabled: !widget.readOnly,
       firstDate: field.minDate,
       lastDate: field.maxDate,
@@ -543,7 +548,8 @@ class _DynamicFormBuilderState extends ConsumerState<DynamicFormBuilder>
         prefixIcon: const Icon(Icons.access_time_outlined),
       ),
       inputType: InputType.time,
-      validator: FormBuilderValidators.compose(validators),
+      validator: FormBuilderValidators.compose(
+          validators.cast<FormFieldValidator<DateTime>>()),
       enabled: !widget.readOnly,
       onChanged: (value) => _handleFieldChanged(field.fieldName, value),
     );
@@ -604,6 +610,7 @@ class _DynamicFormBuilderState extends ConsumerState<DynamicFormBuilder>
       onChanged: widget.readOnly
           ? null
           : (value) => _handleFieldChanged(field.fieldName, value),
+      initialValue: 0.0,
     );
   }
 
@@ -925,7 +932,7 @@ class _DynamicFormBuilderState extends ConsumerState<DynamicFormBuilder>
 
     for (final field in widget.model.fields.values) {
       final section = field.section ?? 'General';
-      grouped.putIfAbsent(section, () => []).add(field);
+      grouped.putIfAbsent(section, () => []).add(field as FieldConfig);
     }
 
     return grouped;
@@ -985,7 +992,7 @@ class _DynamicFormBuilderState extends ConsumerState<DynamicFormBuilder>
     if (formState != null) {
       for (final field in widget.model.fields.values) {
         final value = formState.fields[field.fieldName]?.value;
-        final validators = _buildValidators(field);
+        final validators = _buildValidators(field as FieldConfig);
 
         for (final validator in validators) {
           final error = validator(value?.toString());

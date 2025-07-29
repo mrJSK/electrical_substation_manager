@@ -15,12 +15,18 @@ class ConnectivityService extends ChangeNotifier {
 
   final Connectivity _connectivity = Connectivity();
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-
   ConnectivityStatus _status = ConnectivityStatus.checking;
-  ConnectivityStatus get status => _status;
 
+  // Stream controller for status changes
+  final StreamController<ConnectivityStatus> _statusController =
+      StreamController<ConnectivityStatus>.broadcast();
+
+  ConnectivityStatus get status => _status;
   bool get isOnline => _status == ConnectivityStatus.online;
   bool get isOffline => _status == ConnectivityStatus.offline;
+
+  // Expose status as stream
+  Stream<ConnectivityStatus> get statusStream => _statusController.stream;
 
   // Initialize connectivity monitoring
   Future<void> initialize() async {
@@ -35,6 +41,7 @@ class ConnectivityService extends ChangeNotifier {
         debugPrint('Connectivity error: $error');
         _status = ConnectivityStatus.offline;
         notifyListeners();
+        _statusController.add(_status);
       },
     );
   }
@@ -51,7 +58,7 @@ class ConnectivityService extends ChangeNotifier {
     if (_status != newStatus) {
       _status = newStatus;
       notifyListeners();
-
+      _statusController.add(_status);
       // Log connectivity changes with connection types
       debugPrint('Connectivity changed to: $_status (${results.join(', ')})');
     }
@@ -61,6 +68,7 @@ class ConnectivityService extends ChangeNotifier {
   @override
   void dispose() {
     _connectivitySubscription?.cancel();
+    _statusController.close();
     super.dispose();
   }
 
@@ -96,5 +104,47 @@ class ConnectivityService extends ChangeNotifier {
   Future<bool> hasConnectionType(ConnectivityResult type) async {
     final results = await _connectivity.checkConnectivity();
     return results.contains(type);
+  }
+
+  // Get connection type as string for display
+  String get connectionType {
+    // This would need to be implemented based on current connection types
+    // For now, return a simple status
+    return isOnline ? 'Connected' : 'Disconnected';
+  }
+
+  // Additional utility methods
+  Future<bool> waitForConnection(
+      {Duration timeout = const Duration(seconds: 30)}) async {
+    if (isOnline) return true;
+
+    final completer = Completer<bool>();
+    late StreamSubscription subscription;
+
+    subscription = statusStream.listen((status) {
+      if (status == ConnectivityStatus.online) {
+        subscription.cancel();
+        if (!completer.isCompleted) {
+          completer.complete(true);
+        }
+      }
+    });
+
+    // Set timeout
+    Timer(timeout, () {
+      subscription.cancel();
+      if (!completer.isCompleted) {
+        completer.complete(false);
+      }
+    });
+
+    return completer.future;
+  }
+
+  // Get network strength (placeholder - would need platform-specific implementation)
+  Future<int> getNetworkStrength() async {
+    // Return a value between 0-100 representing network strength
+    // This would need platform-specific implementation
+    return isOnline ? 75 : 0;
   }
 }

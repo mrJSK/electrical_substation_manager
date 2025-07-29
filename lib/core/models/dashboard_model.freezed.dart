@@ -530,6 +530,8 @@ mixin _$DashboardWidget {
   bool get isResizable => throw _privateConstructorUsedError;
   Map<String, dynamic> get styling => throw _privateConstructorUsedError;
   int get refreshInterval => throw _privateConstructorUsedError; // minutes
+  String get priority =>
+      throw _privateConstructorUsedError; // Added priority field
   @TimestampConverter()
   DateTime? get lastUpdated => throw _privateConstructorUsedError;
 
@@ -558,6 +560,7 @@ abstract class $DashboardWidgetCopyWith<$Res> {
       bool isResizable,
       Map<String, dynamic> styling,
       int refreshInterval,
+      String priority,
       @TimestampConverter() DateTime? lastUpdated});
 
   $GridPositionCopyWith<$Res> get position;
@@ -588,6 +591,7 @@ class _$DashboardWidgetCopyWithImpl<$Res, $Val extends DashboardWidget>
     Object? isResizable = null,
     Object? styling = null,
     Object? refreshInterval = null,
+    Object? priority = null,
     Object? lastUpdated = freezed,
   }) {
     return _then(_value.copyWith(
@@ -639,6 +643,10 @@ class _$DashboardWidgetCopyWithImpl<$Res, $Val extends DashboardWidget>
           ? _value.refreshInterval
           : refreshInterval // ignore: cast_nullable_to_non_nullable
               as int,
+      priority: null == priority
+          ? _value.priority
+          : priority // ignore: cast_nullable_to_non_nullable
+              as String,
       lastUpdated: freezed == lastUpdated
           ? _value.lastUpdated
           : lastUpdated // ignore: cast_nullable_to_non_nullable
@@ -676,6 +684,7 @@ abstract class _$$DashboardWidgetImplCopyWith<$Res>
       bool isResizable,
       Map<String, dynamic> styling,
       int refreshInterval,
+      String priority,
       @TimestampConverter() DateTime? lastUpdated});
 
   @override
@@ -705,6 +714,7 @@ class __$$DashboardWidgetImplCopyWithImpl<$Res>
     Object? isResizable = null,
     Object? styling = null,
     Object? refreshInterval = null,
+    Object? priority = null,
     Object? lastUpdated = freezed,
   }) {
     return _then(_$DashboardWidgetImpl(
@@ -756,6 +766,10 @@ class __$$DashboardWidgetImplCopyWithImpl<$Res>
           ? _value.refreshInterval
           : refreshInterval // ignore: cast_nullable_to_non_nullable
               as int,
+      priority: null == priority
+          ? _value.priority
+          : priority // ignore: cast_nullable_to_non_nullable
+              as String,
       lastUpdated: freezed == lastUpdated
           ? _value.lastUpdated
           : lastUpdated // ignore: cast_nullable_to_non_nullable
@@ -780,6 +794,7 @@ class _$DashboardWidgetImpl extends _DashboardWidget {
       this.isResizable = false,
       final Map<String, dynamic> styling = const {},
       this.refreshInterval = 15,
+      this.priority = 'medium',
       @TimestampConverter() this.lastUpdated})
       : _config = config,
         _requiredPermissions = requiredPermissions,
@@ -839,12 +854,16 @@ class _$DashboardWidgetImpl extends _DashboardWidget {
   final int refreshInterval;
 // minutes
   @override
+  @JsonKey()
+  final String priority;
+// Added priority field
+  @override
   @TimestampConverter()
   final DateTime? lastUpdated;
 
   @override
   String toString() {
-    return 'DashboardWidget(id: $id, type: $type, title: $title, subtitle: $subtitle, description: $description, config: $config, requiredPermissions: $requiredPermissions, position: $position, isVisible: $isVisible, isResizable: $isResizable, styling: $styling, refreshInterval: $refreshInterval, lastUpdated: $lastUpdated)';
+    return 'DashboardWidget(id: $id, type: $type, title: $title, subtitle: $subtitle, description: $description, config: $config, requiredPermissions: $requiredPermissions, position: $position, isVisible: $isVisible, isResizable: $isResizable, styling: $styling, refreshInterval: $refreshInterval, priority: $priority, lastUpdated: $lastUpdated)';
   }
 
   @override
@@ -871,6 +890,8 @@ class _$DashboardWidgetImpl extends _DashboardWidget {
             const DeepCollectionEquality().equals(other._styling, _styling) &&
             (identical(other.refreshInterval, refreshInterval) ||
                 other.refreshInterval == refreshInterval) &&
+            (identical(other.priority, priority) ||
+                other.priority == priority) &&
             (identical(other.lastUpdated, lastUpdated) ||
                 other.lastUpdated == lastUpdated));
   }
@@ -891,6 +912,7 @@ class _$DashboardWidgetImpl extends _DashboardWidget {
       isResizable,
       const DeepCollectionEquality().hash(_styling),
       refreshInterval,
+      priority,
       lastUpdated);
 
   @JsonKey(ignore: true)
@@ -922,6 +944,7 @@ abstract class _DashboardWidget extends DashboardWidget {
           final bool isResizable,
           final Map<String, dynamic> styling,
           final int refreshInterval,
+          final String priority,
           @TimestampConverter() final DateTime? lastUpdated}) =
       _$DashboardWidgetImpl;
   const _DashboardWidget._() : super._();
@@ -954,6 +977,8 @@ abstract class _DashboardWidget extends DashboardWidget {
   @override
   int get refreshInterval;
   @override // minutes
+  String get priority;
+  @override // Added priority field
   @TimestampConverter()
   DateTime? get lastUpdated;
   @override

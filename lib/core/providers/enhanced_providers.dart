@@ -1,3 +1,4 @@
+// lib/core/providers/enhanced_providers.dart
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -28,16 +29,26 @@ class UserPermissions extends _$UserPermissions {
     final connectivity = ref.watch(connectivityServiceProvider);
 
     try {
-      // Use cached provider for better performance
-      return await ref.watch(cachedUserPermissionsProvider(userId).future);
+      // Get permissions as Map<String, bool> from cached provider
+      final permissionsMap =
+          await ref.watch(cachedUserPermissionsProvider(userId).future);
+
+      // Convert Map<String, bool> to List<String> by extracting granted permissions
+      return permissionsMap.entries
+          .where((entry) => entry.value == true)
+          .map((entry) => entry.key)
+          .toList();
     } catch (e) {
       // Enhanced error handling
       if (connectivity.status == ConnectivityStatus.offline) {
         // Try to get from local cache
-        final cached =
-            await EnhancedIsarService.getCachedUserPermissions(userId);
+        final cached = await EnhancedIsarService.getCachedPermissions(userId);
         if (cached != null) {
-          return cached;
+          // Convert Map<String, bool> to List<String>
+          return cached.entries
+              .where((entry) => entry.value == true)
+              .map((entry) => entry.key)
+              .toList();
         }
       }
 
@@ -91,7 +102,7 @@ class UserPermissions extends _$UserPermissions {
 @riverpod
 class UserProfileData extends _$UserProfileData {
   @override
-  Future<UserProfile?> build(String userId) async {
+  Future<UserModel?> build(String userId) async {
     // Cache for extended period as profile data changes less frequently
     ref.cacheForWithConnectivity(const Duration(hours: 6));
 
@@ -248,8 +259,8 @@ class WidgetDataCache extends _$WidgetDataCache {
       final connectivity = ref.watch(connectivityServiceProvider);
 
       if (connectivity.status == ConnectivityStatus.offline) {
-        final cached =
-            await EnhancedIsarService.getCachedWidgetData(widgetId, userId);
+        final cached = await EnhancedIsarService.getCachedGenericData(
+            'widget_${widgetId}_$userId');
         if (cached != null) {
           return {
             ...cached,
@@ -554,7 +565,7 @@ class SystemHealth extends _$SystemHealth {
 
   Future<Map<String, dynamic>> _getMemoryUsage() async {
     try {
-      return await EnhancedIsarService.getMemoryUsage();
+      return await EnhancedIsarService.getCacheStats();
     } catch (e) {
       return {'error': e.toString()};
     }
@@ -562,7 +573,7 @@ class SystemHealth extends _$SystemHealth {
 }
 
 // =============================================================================
-// ENHANCED CACHE EXTENSIONS
+// ENHANCED CACHE EXTENSIONS (FIXED)
 // =============================================================================
 
 /// Enhanced cache extension with connectivity awareness
@@ -570,7 +581,6 @@ extension EnhancedCacheForExtension on Ref {
   /// Cache with connectivity awareness - extends cache time when offline
   void cacheForWithConnectivity(Duration duration) {
     Timer? cacheTimer;
-    StreamSubscription? connectivitySub;
 
     void setupTimer(Duration cacheDuration) {
       cacheTimer?.cancel();
@@ -579,25 +589,54 @@ extension EnhancedCacheForExtension on Ref {
       });
     }
 
-    // Watch connectivity and adjust cache behavior
-    connectivitySub =
-        watch(connectivityServiceProvider.stream).listen((connectivity) {
-      if (connectivity.status == ConnectivityStatus.offline) {
-        // Extend cache time when offline
-        setupTimer(duration * 2);
-      } else {
-        // Normal cache time when online
+    // Check connectivity status periodically and adjust cache
+    Timer? connectivityCheckTimer;
+
+    void checkConnectivityAndAdjustCache() {
+      try {
+        final connectivity = watch(connectivityServiceProvider);
+        if (connectivity.status == ConnectivityStatus.offline) {
+          // Extend cache time when offline
+          setupTimer(duration * 2);
+        } else {
+          // Normal cache time when online
+          setupTimer(duration);
+        }
+      } catch (e) {
+        // Fallback to normal duration if connectivity check fails
         setupTimer(duration);
       }
-    });
+    }
 
     // Initial setup
-    setupTimer(duration);
+    checkConnectivityAndAdjustCache();
+
+    // Check connectivity every minute and adjust cache accordingly
+    connectivityCheckTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      try {
+        checkConnectivityAndAdjustCache();
+      } catch (e) {
+        // Silent fail
+      }
+    });
 
     // Cleanup
     onDispose(() {
       cacheTimer?.cancel();
-      connectivitySub?.cancel();
+      connectivityCheckTimer?.cancel();
+    });
+  }
+
+  /// Simple cache with timeout
+  void cacheFor(Duration duration) {
+    Timer? cacheTimer;
+
+    cacheTimer = Timer(duration, () {
+      invalidateSelf();
+    });
+
+    onDispose(() {
+      cacheTimer?.cancel();
     });
   }
 
@@ -637,7 +676,7 @@ extension EnhancedCacheForExtension on Ref {
   void cacheWithDependencies(
       Duration duration, List<ProviderBase> dependencies) {
     Timer? cacheTimer;
-    final subscriptions = <StreamSubscription>[];
+    final subscriptions = <ProviderSubscription>[];
 
     void setupCache() {
       cacheTimer?.cancel();
@@ -649,8 +688,7 @@ extension EnhancedCacheForExtension on Ref {
     // Watch all dependencies
     for (final dependency in dependencies) {
       try {
-        // This is a simplified approach - in practice you'd need proper dependency watching
-        subscriptions.add(watch(dependency.stream).listen((_) {
+        subscriptions.add(listen(dependency, (_, __) {
           invalidateSelf();
         }));
       } catch (e) {
@@ -664,7 +702,7 @@ extension EnhancedCacheForExtension on Ref {
     onDispose(() {
       cacheTimer?.cancel();
       for (final sub in subscriptions) {
-        sub.cancel();
+        sub.close();
       }
     });
   }
@@ -710,8 +748,6 @@ class ProviderUtils {
     } catch (e) {
       status['systemHealth'] = false;
     }
-
-    // Add more provider checks as needed
 
     return status;
   }

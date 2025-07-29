@@ -6,6 +6,7 @@ import '../models/user_model.dart';
 import '../models/organization_model.dart';
 import '../models/notification_model.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../services/permission_service.dart';
 import '../services/dashboard_service.dart';
 import '../services/connectivity_service.dart';
@@ -13,7 +14,7 @@ import '../services/enhanced_isar_service.dart';
 import 'cached_providers.dart';
 
 // =============================================================================
-// CORE SERVICE PROVIDERS
+// CORE SERVICE PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// Authentication service provider
@@ -35,6 +36,9 @@ final dashboardServiceProvider = Provider<DashboardService>((ref) {
 final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
   final service = ConnectivityService();
 
+  // Initialize the service
+  service.initialize();
+
   // Dispose service when provider is disposed
   ref.onDispose(() {
     service.dispose();
@@ -45,7 +49,7 @@ final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
 
 /// Enhanced Isar database service provider
 final isarServiceProvider = Provider<EnhancedIsarService>((ref) {
-  return EnhancedIsarService();
+  return EnhancedIsarService.instance; // Use singleton instance
 });
 
 /// Notification service provider
@@ -55,7 +59,7 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 // =============================================================================
-// AUTHENTICATION & USER PROVIDERS
+// AUTHENTICATION & USER PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// Current authenticated user stream provider
@@ -92,7 +96,8 @@ final userProfileProvider =
 
   try {
     // Try to get from cache first
-    final cachedProfile = await cacheManager.getCachedUserProfile(userId);
+    final cachedProfile =
+        await cacheManager.getCachedData<UserModel>('user_profile_$userId');
     if (cachedProfile != null) {
       return cachedProfile;
     }
@@ -102,13 +107,15 @@ final userProfileProvider =
 
     // Cache the result
     if (profile != null) {
-      await cacheManager.cacheUserProfile(profile);
+      await cacheManager.cacheData('user_profile_$userId', profile);
     }
 
     return profile;
   } catch (e) {
     // Try to return cached data on error
-    return await cacheManager.getCachedUserProfile(userId);
+    final cached =
+        await cacheManager.getCachedData<UserModel>('user_profile_$userId');
+    return cached;
   }
 });
 
@@ -134,27 +141,31 @@ final userOrganizationProvider =
 
   try {
     // Try cache first
-    final cachedOrg = await cacheManager.getCachedOrganization(organizationId);
+    final cachedOrg = await cacheManager
+        .getCachedData<OrganizationModel>('organization_$organizationId');
     if (cachedOrg != null) {
       return cachedOrg;
     }
 
-    // Fetch from service (you'll need to implement this in AuthService)
+    // Fetch from service
     final organization = await auth.getOrganization(organizationId);
 
     // Cache the result
     if (organization != null) {
-      await cacheManager.cacheOrganization(organization);
+      await cacheManager.cacheData(
+          'organization_$organizationId', organization);
     }
 
     return organization;
   } catch (e) {
-    return await cacheManager.getCachedOrganization(organizationId);
+    final cached = await cacheManager
+        .getCachedData<OrganizationModel>('organization_$organizationId');
+    return cached;
   }
 });
 
 // =============================================================================
-// PERMISSION PROVIDERS
+// PERMISSION PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// User permissions provider with caching
@@ -165,7 +176,8 @@ final userPermissionsProvider =
 
   try {
     // Try cache first
-    final cachedPermissions = await cacheManager.getCachedPermissions(userId);
+    final cachedPermissions = await cacheManager
+        .getCachedData<Map<String, bool>>('permissions_$userId');
     if (cachedPermissions != null) {
       return cachedPermissions;
     }
@@ -174,12 +186,14 @@ final userPermissionsProvider =
     final permissions = await permissionService.getUserPermissions(userId);
 
     // Cache the result
-    await cacheManager.cachePermissions(userId, permissions);
+    await cacheManager.cacheData('permissions_$userId', permissions);
 
     return permissions;
   } catch (e) {
     // Return cached data on error or empty map
-    return await cacheManager.getCachedPermissions(userId) ?? <String, bool>{};
+    final cached = await cacheManager
+        .getCachedData<Map<String, bool>>('permissions_$userId');
+    return cached ?? <String, bool>{};
   }
 });
 
@@ -193,8 +207,8 @@ final hasPermissionProvider =
     return await permissionService.hasPermission(
         params.userId, params.permission);
   } catch (e) {
-    // Fail open for better UX (allow access if permission check fails)
-    return true;
+    // Fail closed for security (deny access if permission check fails)
+    return false;
   }
 });
 
@@ -213,7 +227,7 @@ final currentUserPermissionsProvider =
 });
 
 // =============================================================================
-// CONNECTIVITY PROVIDERS
+// CONNECTIVITY PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// Connectivity status stream provider
@@ -239,7 +253,7 @@ final networkTypeProvider = Provider<String>((ref) {
 });
 
 // =============================================================================
-// NOTIFICATION PROVIDERS
+// NOTIFICATION PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// User notifications provider
@@ -275,7 +289,7 @@ final currentUserNotificationsProvider =
 });
 
 // =============================================================================
-// APPLICATION STATE PROVIDERS
+// APPLICATION STATE PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// App initialization provider
@@ -289,10 +303,7 @@ final appInitializationProvider = FutureProvider<bool>((ref) async {
     await connectivity.initialize();
 
     // Initialize database
-    await isar.initialize();
-
-    // Initialize other services as needed
-    // await ref.read(notificationServiceProvider).initialize();
+    await EnhancedIsarService.initialize(); // Use static method
 
     return true;
   } catch (e) {
@@ -311,7 +322,7 @@ final selectedOrganizationProvider = StateProvider<String?>((ref) {
 });
 
 // =============================================================================
-// DASHBOARD PROVIDERS (moved from cached_providers.dart for better organization)
+// DASHBOARD PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// Dashboard configuration provider
@@ -322,7 +333,8 @@ final dashboardConfigProvider =
 
   try {
     // Try cache first
-    final cachedDashboard = await cacheManager.getCachedDashboard(userId);
+    final cachedDashboard =
+        await cacheManager.getCachedData<DashboardConfig>('dashboard_$userId');
     if (cachedDashboard != null) {
       return cachedDashboard;
     }
@@ -332,12 +344,14 @@ final dashboardConfigProvider =
 
     // Cache the result
     if (dashboard != null) {
-      await cacheManager.cacheDashboard(userId, dashboard);
+      await cacheManager.cacheData('dashboard_$userId', dashboard);
     }
 
     return dashboard;
   } catch (e) {
-    return await cacheManager.getCachedDashboard(userId);
+    final cached =
+        await cacheManager.getCachedData<DashboardConfig>('dashboard_$userId');
+    return cached;
   }
 });
 
@@ -361,8 +375,9 @@ final widgetDataProvider = FutureProvider.family<Map<String, dynamic>,
     }
 
     // Try cache first
-    final cacheKey = '${params.widgetId}_${params.userId}';
-    final cachedData = await cacheManager.getCachedWidgetData(cacheKey);
+    final cacheKey = 'widget_${params.widgetId}_${params.userId}';
+    final cachedData =
+        await cacheManager.getCachedData<Map<String, dynamic>>(cacheKey);
     if (cachedData != null && !widget.needsRefresh) {
       return cachedData;
     }
@@ -375,13 +390,15 @@ final widgetDataProvider = FutureProvider.family<Map<String, dynamic>,
     );
 
     // Cache the result
-    await cacheManager.cacheWidgetData(cacheKey, data);
+    await cacheManager.cacheData(cacheKey, data);
 
     return data;
   } catch (e) {
     // Return cached data on error or empty data
-    final cacheKey = '${params.widgetId}_${params.userId}';
-    return await cacheManager.getCachedWidgetData(cacheKey) ??
+    final cacheKey = 'widget_${params.widgetId}_${params.userId}';
+    final cached =
+        await cacheManager.getCachedData<Map<String, dynamic>>(cacheKey);
+    return cached ??
         {
           'error': true,
           'message': e.toString(),
@@ -391,7 +408,7 @@ final widgetDataProvider = FutureProvider.family<Map<String, dynamic>,
 });
 
 // =============================================================================
-// UTILITY PROVIDERS
+// UTILITY PROVIDERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// Current timestamp provider (useful for refresh triggers)
@@ -410,7 +427,7 @@ final isDebugModeProvider = Provider<bool>((ref) {
 });
 
 // =============================================================================
-// COMPUTED PROVIDERS (Combinations of multiple providers)
+// COMPUTED PROVIDERS (Combinations of multiple providers) - FIXED TYPE ANNOTATIONS
 // =============================================================================
 
 /// User context provider (combines user info, permissions, and organization)
@@ -452,7 +469,7 @@ final systemStatusProvider = Provider<SystemStatus>((ref) {
 });
 
 // =============================================================================
-// HELPER CLASSES
+// HELPER CLASSES (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// User context data class
@@ -492,7 +509,7 @@ class SystemStatus {
 }
 
 // =============================================================================
-// PROVIDER REFRESH HELPERS
+// PROVIDER REFRESH HELPERS (FIXED TYPE ANNOTATIONS)
 // =============================================================================
 
 /// Extension to make provider refreshing easier
@@ -507,7 +524,7 @@ extension ProviderRefreshExtensions on WidgetRef {
   void refreshDashboard(String userId) {
     refresh(dashboardConfigProvider(userId));
     // Refresh all widget data for this user
-    read(cacheManagerProvider.notifier).invalidateUserWidgetCache(userId);
+    read(cacheManagerProvider.notifier).invalidatePattern('widget_*_$userId');
   }
 
   /// Refresh all user-related data
@@ -524,7 +541,7 @@ extension ProviderRefreshExtensions on WidgetRef {
 }
 
 // =============================================================================
-// PROVIDER OBSERVERS (for debugging)
+// PROVIDER OBSERVERS (for debugging) - FIXED TYPE ANNOTATIONS
 // =============================================================================
 
 class ProviderLogger extends ProviderObserver {
